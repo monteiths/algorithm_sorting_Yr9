@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Year 9 Computer Science · Techquity practice</title>
+<style>
+:root{font:100%/1.5 Arial,sans-serif;color:#24152c;background:#fff;--purple:#5a108f;--pale:#f5eff9}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+main{max-width:46rem;margin:0 auto;padding:clamp(.75rem,3vw,1.5rem)}
+article{border:1px solid #ddcde8;border-radius:1rem;overflow:hidden}
+header{padding:1rem 1.25rem;background:var(--purple);color:white}
+header p{margin:0;font-size:.75rem;font-weight:bold;letter-spacing:.09em}
+h1{font-size:clamp(1.25rem,4vw,1.65rem);line-height:1.2;margin:.35rem 0 0}
+#body{padding:1rem 1.25rem}
+#progress{margin:0 0 .75rem;color:var(--purple);font-weight:bold;font-size:.9rem}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+legend{padding:0;margin:0 0 .75rem;font-weight:bold;font-size:1.12rem;line-height:1.4}
+label{display:flex;align-items:center;gap:.6rem;padding:.6rem .7rem;border:1px solid #ddcde8;border-radius:.5rem;background:var(--pale);margin:0 0 .45rem;cursor:pointer}
+label:has(input:checked){border-color:var(--purple);background:#eaddf5}
+input[type=radio]{accent-color:var(--purple);flex:none;margin:0;width:1rem;height:1rem}
+label.good{background:#e8f5ed;border-color:#327754}
+label.miss{background:#fff1e6;border-color:#a85b24}
+label.good,label.miss{cursor:default}
+.actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem}
+button{font:inherit;font-weight:bold;border:1px solid var(--purple);border-radius:.5rem;background:var(--purple);color:#fff;padding:.5rem .9rem;min-height:44px;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+:focus-visible{outline:3px solid #326ba8;outline-offset:3px}
+#feedback:not(:empty){padding:.65rem .8rem;border-radius:.5rem;margin-top:.75rem;background:var(--pale)}
+h2{margin:.1rem 0 .5rem;font-size:1.3rem}
+#results p{margin:.3rem 0}
+nav{display:flex;flex-wrap:wrap;gap:.6rem 1rem;margin:1rem 0 0;font-size:.9rem}
+a{color:var(--purple)}
+</style>
+</head>
+<body>
+<main>
+<article>
+<header><p>TECHQUITY / YEAR 9 COMPUTER SCIENCE</p><h1 id="title"></h1></header>
+<div id="body">
+<p id="progress" tabindex="-1"></p>
+<form id="quiz">
+<fieldset id="choices"></fieldset>
+<div id="feedback" role="status"></div>
+<div class="actions"><button id="check" type="submit" disabled>Check answer</button><button id="next" type="button" hidden>Next question</button></div>
+</form>
+<section id="results" hidden><h2 id="score" tabindex="-1"></h2><p id="summary"></p><div class="actions"><button id="retry" type="button">Try again</button></div></section>
+</div>
+</article>
+<nav id="nav" aria-label="Practice quizzes" hidden></nav>
+<noscript>Enable JavaScript to take the practice quiz.</noscript>
+</main>
+<script>
+const quizzes = [
+{title:"Practice 1 · Toast and computer science", questions:[
+["Which detail can you leave out of a toast-making algorithm without affecting how the toast is made?",
+["When to put bread in the toaster","How to start the toaster","The colour of the serving plate","When to remove the toasted bread"],2,"Plate colour does not affect the task. Leaving out details that do not matter for the purpose is abstraction."],
+["Making toast and making a sandwich both follow prepare → make → tidy up → serve. How could you use that pattern?",
+["Copy every toast instruction unchanged.","Reuse the stages, adapt the steps and test.","Assume the matching stages guarantee success.","Keep only the steps that mention bread."],1,"The shared stages give you a starting point. Adapt the instructions to the new task, then test whether they work."],
+["Which is a clear sequence for putting bread into a toaster that is ready to use?",
+["Open the bag → take out a slice → place it in a toaster slot.","Place a slice in a toaster slot → take it out of the bag → open the bag.","Sort out the bread → do the toaster bit → finish.","Bread bag → slice of bread → toaster slot."],0,"An algorithm gives precise instructions. This sequence gives clear actions in an order you can follow."],
+["“If the person wants jam, spread jam on the toast. Otherwise, leave it plain.” Which algorithm structure chooses what happens next?",
+["Sequence","Iteration","Abstraction","Selection"],3,"Selection uses a condition to choose which path to follow."],
+["“Repeat the spreading action until the surface is covered.” Which algorithm structure makes the action repeat?",
+["Selection","Iteration","Abstraction","Sequence"],1,"Iteration repeats an instruction or group of instructions. Here it repeats until the surface is covered."]
+]},
+{title:"Practice 2 · Apply the key ideas",questions:[
+["You are drawing a map to help a visitor reach the school library. Which detail is most useful to keep?",
+["The colour of the classroom walls","The junction where visitors must turn left","The number of books in the library","The size of the desks in each classroom"],1,"A turning point helps visitors navigate. Abstraction keeps details that serve the map’s purpose."],
+["Packing a school bag and packing a sports bag both involve checking what is needed, collecting it and packing it. What should you do with this pattern?",
+["Pack exactly the same items in both bags.","Discard the approach because the bags differ.","Reuse the approach, change the items and test it.","Skip checking because the approach worked before."],2,"Pattern recognition suggests that the same structure can help with both tasks. Change the items and check the result."],
+["A robot understands “move forward one square” and “turn right”. Which instruction can it follow without guessing?",
+["Move forward until it looks right.","Move forward a sensible distance, then turn.","Turn towards the best route.","Move forward three squares, then turn right."],3,"The instruction specifies the distance, the direction of the turn and the order of actions."],
+["A game says: “If the score is at least 10, display ‘You win’. Otherwise display ‘Keep playing’.” The score is 8. What happens?",
+["It displays ‘Keep playing’.","It displays ‘You win’.","It displays both messages.","It increases the score to 10."],0,"8 is less than 10, so selection sends the algorithm down the otherwise path."],
+["Set number to 0. Repeat three times: add 1 to number, then say number. What numbers are said?",
+["0, 1, 2","1, 2, 3, 4","1, 2, 3","3 only"],2,"The loop runs three times. Each time, the algorithm adds 1 before saying the number."]
+]}];
+const params = new URLSearchParams(location.search);
+const selected = params.get("quiz") === "2" ? 1 : 0;
+const quiz = quizzes[selected];
+const byId = id => document.getElementById(id);
+const form = byId("quiz"), choices = byId("choices"), feedback = byId("feedback");
+const progress = byId("progress"), check = byId("check"), next = byId("next");
+const results = byId("results"), score = byId("score");
+let index = 0, points = 0, checked = false;
+document.title = quiz.title + " | Techquity";
+byId("title").textContent = quiz.title;
+if (params.get("embed") !== "1") {
+  const nav = byId("nav");
+  nav.hidden = false;
+  const other = document.createElement("a");
+  other.href = "?quiz=" + (selected === 0 ? "2" : "1");
+  other.textContent = quizzes[1-selected].title + " →";
+  nav.append(other);
+}
+function render(focus = false) {
+  const [question, options] = quiz.questions[index];
+  checked = false;
+  progress.textContent = "Question " + (index+1) + " of " + quiz.questions.length;
+  choices.replaceChildren();
+  choices.disabled = false;
+  const legend = document.createElement("legend");
+  legend.textContent = question;
+  choices.append(legend);
+  options.forEach((option, i) => {
+    const label = document.createElement("label");
+    const radio = document.createElement("input");
+    radio.type = "radio"; radio.name = "answer"; radio.value = i;
+    label.append(radio, String.fromCharCode(65+i) + ". " + option);
+    choices.append(label);
+  });
+  feedback.textContent = "";
+  check.hidden = false;
+  check.disabled = true;
+  next.hidden = true;
+  next.textContent = index === quiz.questions.length-1 ? "See score" : "Next question";
+  if (focus) progress.focus();
+}
+form.addEventListener("change", () => { if (!checked) check.disabled = false; });
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  const answer = form.querySelector("input:checked");
+  if (!answer || checked) return;
+  checked = true;
+  const [,options,correct,reason] = quiz.questions[index];
+  const right = Number(answer.value) === correct;
+  if (right) points++;
+  const labels = choices.querySelectorAll("label");
+  labels[correct].classList.add("good");
+  if (!right) answer.parentElement.classList.add("miss");
+  feedback.textContent = (right ? "Correct. " : "Answer: " + String.fromCharCode(65+correct) + ". " + options[correct] + " — ") + reason;
+  choices.disabled = true;
+  check.hidden = true;
+  next.hidden = false;
+  next.focus();
+});
+next.addEventListener("click", () => {
+  if (!checked) return;
+  index++;
+  if (index < quiz.questions.length) { render(true); return; }
+  form.hidden = true;
+  progress.textContent = "Practice complete";
+  score.textContent = "You scored " + points + " out of " + quiz.questions.length + ".";
+  byId("summary").textContent = points === quiz.questions.length
+    ? "You got every question right."
+    : "Try again and see if you can explain why each answer works.";
+  results.hidden = false;
+  score.focus();
+});
+byId("retry").addEventListener("click", () => {
+  index = 0; points = 0; results.hidden = true; form.hidden = false;
+  render(true);
+});
+render();
+</script>
+</body>
+</html>
