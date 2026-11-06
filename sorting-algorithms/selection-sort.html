@@ -46,12 +46,25 @@ select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;
 .quick-page .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:430px){header,main{padding:10px}.panel{padding:10px}.cards,.selection-track{gap:4px}.card,.selection-placeholder{width:clamp(38px,13vw,53px);height:64px}.selection-placeholder{font-size:.53rem}.selection-placeholder .position-label{font-size:.48rem}.selection-choices{gap:6px}.msg{font-size:.92rem}}
 </style></head><body>
-<header><div class="kicker">TECHQUITY / COMPUTER SCIENCE / WE LEARN</div><h1>Selection Sort</h1><div class="lead">Start unsorted: <b>3, 5, 2, 3, 1</b>. Use <b>Next</b> to watch one step at a time.</div></header><main>
-<div class="panel controls"><button id="reset">Reset</button><button id="prev">← Previous</button><button id="next" class="primary">Next →</button></div>
+<header><div class="kicker">TECHQUITY / COMPUTER SCIENCE / WE LEARN</div><h1>Selection Sort</h1><div class="lead"><span role="status"><span id="cardsLabel">Original example</span>: <b id="startingCards">3, 5, 2, 3, 1</b>.</span> Use <b>Next</b> to watch one step at a time.</div></header><main>
+<div class="panel controls"><button id="reset" title="Restart with the current cards">Reset</button><button id="randomCards" type="button">New random cards</button><button id="originalCards" type="button">Original example</button><button id="prev">← Previous</button><button id="next" class="primary">Next →</button></div>
 <div id="rule" class="rule"></div><div class="panel"><div id="stage"></div><div id="msg" class="msg" role="status" aria-atomic="true"></div><div class="stats"><div class="stat"><b id="c">0</b><small>Comparisons</small></div><div class="stat"><b id="s">0</b><small>Swaps</small></div><div class="stat"><b id="p">0</b><small>Round</small></div><div class="stat"><b id="st">Ready</b><small>Status</small></div></div></div>
 <div id="selftest" style="display:none"></div></main><script>
 
-const START=[3,5,2,3,1];
+const ORIGINAL=[3,5,2,3,1];
+let START=[...ORIGINAL], randomSet=false, cancelExchange=null;
+function newCards(){
+ let cards;
+ do {
+  cards=Array.from({length:5},()=>1+Math.floor(Math.random()*9));
+ }while(cards.every((v,i)=>i===0||cards[i-1]<=v)||
+        cards.every((v,i)=>v===START[i])||cards.every((v,i)=>v===ORIGINAL[i]));
+ return cards;
+}
+function refreshCardsLabel(){
+ $("cardsLabel").textContent=randomSet?"Random set":"Original example";
+ $("startingCards").textContent=START.join(", ");
+}
 const $=id=>document.getElementById(id);
 function midIndex(n){return Math.floor((n-1)/2)} // left-middle for even groups, matching the guide
 function pivotFor(arr,rule){return rule==="first"?arr[0]:rule==="last"?arr[arr.length-1]:arr[midIndex(arr.length)]}
@@ -112,17 +125,17 @@ function quickTrace(input,rule){
 function eq(a,b){return JSON.stringify(a)===JSON.stringify(b)}
 function selfTests(){
  let failures=[];
- let b=bubbleTrace(START);
+ let b=bubbleTrace(ORIGINAL);
  if(!eq(b.result,[1,2,3,3,5]))failures.push("bubble result");
  if(b.C!==10||b.S!==7||b.passes!==4)failures.push(`bubble counts ${b.C}/${b.S}/${b.passes}`);
  if(!(b.steps[0].i===0&&b.steps[0].j===1&&!b.steps[0].swap))failures.push("bubble first comparison");
- let s=selectionTrace(START);
+ let s=selectionTrace(ORIGINAL);
  if(!eq(s.result,[1,2,3,3,5])||s.C!==10||s.S!==4||s.rounds!==4)failures.push("selection trace");
- let q1=quickTrace(START,"first"),ql=quickTrace(START,"last"),qm=quickTrace(START,"middle");
+ let q1=quickTrace(ORIGINAL,"first"),ql=quickTrace(ORIGINAL,"last"),qm=quickTrace(ORIGINAL,"middle");
  if(!eq(q1.result,[1,2,3,3,5])||q1.scans!==7||q1.parts!==2)failures.push("quick first");
  if(!eq(ql.result,[1,2,3,3,5])||ql.scans!==9||ql.parts!==2)failures.push("quick last");
  if(!eq(qm.result,[1,2,3,3,5])||qm.scans!==10||qm.parts!==3)failures.push("quick middle");
- if(pivotFor(START,"middle")!==2)failures.push("middle pivot");
+ if(pivotFor(ORIGINAL,"middle")!==2)failures.push("middle pivot");
  return failures;
 }
 
@@ -130,11 +143,12 @@ function selfTests(){
 const ALGORITHM="selection";
 let idx=-1,trace=null;
 function cards(arr,active=[],finished=[],pivotIndex=null){return `<div class="cards">${arr.map((v,i)=>`<div class="card ${active.includes(i)?"active":""} ${finished.includes(i)?"finished":""} ${pivotIndex===i?"pivot":""}">${v}</div>`).join("")}</div>`}
-function reset(){idx=-1;let alg=ALGORITHM;trace=alg==="bubble"?bubbleTrace(START):alg==="selection"?selectionTrace(START):quickTrace(START,$("pivot").value);render()}
+function reset(){cancelExchange?.();refreshCardsLabel();idx=-1;let alg=ALGORITHM;trace=alg==="bubble"?bubbleTrace(START):alg==="selection"?selectionTrace(START):quickTrace(START,$("pivot").value);render()}
 
 // Animate a genuine exchange from the previous card positions to the new positions.
 // Call after the new cards have been rendered; no algorithm counts are affected.
 function animateCardExchange(left,right,before){
+ cancelExchange?.();
  const cards=[...document.querySelectorAll("#stage > .cards > .card")];
  if(!cards[left]||!cards[right]||!before)return;
  const L=cards[left],R=cards[right],lr=L.getBoundingClientRect(),rr=R.getBoundingClientRect();
@@ -170,9 +184,13 @@ function animateCardExchange(left,right,before){
   {transform:`translate(${-dx*.78}px,${arc*.8}px) rotate(-7deg) scale(1.17)`,offset:.75},
   {transform:`translate(${-dx}px,${-dy}px) scale(1)`,offset:1}
  ],{duration,easing,fill:"forwards"});
- Promise.all([up.finished.catch(()=>{}),down.finished.catch(()=>{})]).then(()=>{
+ const cleanup=()=>{
   overlay.remove();L.style.visibility="";R.style.visibility="";
- });
+  if(cancelExchange===cancel)cancelExchange=null;
+ };
+ const cancel=()=>{up.cancel();down.cancel();cleanup();};
+ cancelExchange=cancel;
+ Promise.all([up.finished.catch(()=>{}),down.finished.catch(()=>{})]).then(cleanup);
 }
 
 
@@ -222,7 +240,7 @@ function render(){
    if(idx>=trace.steps.length){
      stage.innerHTML=cards(trace.result,[],[0,1,2,3,4]);
      $("c").textContent=trace.C;$("s").textContent=trace.S;$("p").textContent=trace.passes;
-     $("msg").textContent="Bubble Sort complete: 1, 2, 3, 3, 5. All cards are now finished.";
+     $("msg").textContent=`Bubble Sort complete: ${trace.result.join(", ")}. All cards are now finished.`;
      $("st").textContent="Complete";
      return;
    }
@@ -234,7 +252,7 @@ function render(){
    }
    stage.innerHTML=cards(arr,e&&e.type==="passEnd"?[]:active,finished);
    $("c").textContent=e?e.C:0;$("s").textContent=e?e.S:0;$("p").textContent=e?e.pass:0;
-   $("msg").textContent=!e?"Start at the left: compare 3 and 5.":e.type==="passEnd"?`Pass ${e.pass} finished: the largest value in the unsorted section has reached its final position (green). ${e.unchanged?"No swaps occurred, so the entire list is already sorted.":"Next pass we can skip the green cards because they cannot be displaced by any larger value remaining to their left."}`:e.type==="compare"?`Pass ${e.pass}: COMPARE ${e.before[e.i]} and ${e.before[e.j]}. Will they need swapping? Click Next to see the decision.`:`Pass ${e.pass}: ${e.swap?"SWAP the two highlighted cards":"KEEP the two highlighted cards in place"}. Then move right.`;
+   $("msg").textContent=!e?`Start at the left: compare ${START[0]} and ${START[1]}.`:e.type==="passEnd"?`Pass ${e.pass} finished: the largest value in the unsorted section has reached its final position (green). ${e.unchanged?"No swaps occurred, so the entire list is already sorted.":"Next pass we can skip the green cards because they cannot be displaced by any larger value remaining to their left."}`:e.type==="compare"?`Pass ${e.pass}: COMPARE ${e.before[e.i]} and ${e.before[e.j]}. Will they need swapping? Click Next to see the decision.`:`Pass ${e.pass}: ${e.swap?"SWAP the two highlighted cards":"KEEP the two highlighted cards in place"}. Then move right.`;
    $("st").textContent="Watching";
 
  }else if(alg==="selection"){
@@ -242,7 +260,7 @@ function render(){
    if(idx>=trace.steps.length){
      stage.innerHTML=cards(trace.result,[],[0,1,2,3,4]);
      $("c").textContent=trace.C;$("s").textContent=trace.S;$("p").textContent=trace.rounds;
-     $("msg").textContent="Selection Sort complete: 1, 2, 3, 3, 5. All positions are now finished.";
+     $("msg").textContent=`Selection Sort complete: ${trace.result.join(", ")}. All positions are now finished.`;
      $("st").textContent="Complete";
      return;
    }
@@ -288,7 +306,7 @@ function render(){
    }
    $("c").textContent=e?e.C:0;$("s").textContent=e?e.S:0;$("p").textContent=e?e.round:0;
    if(!e){
-     $("msg").textContent="Round 1: mark 3 as the starting minimum. Scan every remaining card from left to right: 5, 2, 3, 1.";
+     $("msg").textContent=`Round 1: mark ${START[0]} as the starting minimum. Scan every remaining card from left to right: ${START.slice(1).join(", ")}.`;
    }else if(e.type==="selstart"){
      $("msg").textContent=`Round ${e.round}: mark ${e.state[e.min]} as the starting minimum. This is not counted as a scan.`;
    }else if(e.type==="scan"){
@@ -462,6 +480,7 @@ async function moveStep(direction){
  const nextIndex=Math.max(-1,Math.min(steps.length,idx+direction));
  if(nextIndex===idx)return;
  selectionAnimating=true;$("next").disabled=true;$("prev").disabled=true;
+ for(const id of ["randomCards","originalCards","reset","pivot"])if($(id))$(id).disabled=true;
  try{
   const current=alg==="selection"?trace.steps[idx]:null;
   const incoming=alg==="selection"?trace.steps[nextIndex]:alg==="quick"?trace.events[nextIndex]:null;
@@ -485,13 +504,17 @@ async function moveStep(direction){
    await animateSelectionHoldingAreas(false);
   }
  }finally{
-  selectionAnimating=false;$("next").disabled=idx>=steps.length;$("prev").disabled=idx<0;
+  selectionAnimating=false;
+  for(const id of ["randomCards","originalCards","reset","pivot"])if($(id))$(id).disabled=false;
+  $("next").disabled=idx>=steps.length;$("prev").disabled=idx<0;
  }
 }
 $("next").onclick=()=>moveStep(1);
 $("prev").onclick=()=>moveStep(-1);
 $("reset").onclick=()=>{if(!selectionAnimating)reset()};
 if ($("pivot")) $("pivot").onchange=()=>{if(!selectionAnimating)reset()};
+$("randomCards").onclick=()=>{if(selectionAnimating)return;START=newCards();randomSet=true;reset();};
+$("originalCards").onclick=()=>{if(selectionAnimating)return;START=[...ORIGINAL];randomSet=false;reset();};
 reset();
 let f=selfTests();if(location.search.includes("selftest")){$("selftest").style.display="block";$("selftest").textContent=f.length?"SELFTEST FAIL: "+f.join(", "):"SELFTEST PASS";}
 </script></body></html>

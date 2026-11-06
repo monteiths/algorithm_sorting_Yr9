@@ -59,11 +59,11 @@ select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;
 <header>
  <div class="kicker">TECHQUITY / COMPUTER SCIENCE / YOU LEARN</div>
  <h1>Bubble Sort</h1>
- <div class="lead">Use the same <b>3, 5, 2, 3, 1</b> cards and the same routines as Watch &amp; Learn. Drag the cards to make each decision.</div>
+ <div class="lead"><span role="status"><span id="cardsLabel">Original example</span>: <b id="startingCards">3, 5, 2, 3, 1</b>.</span> Drag the cards to make each decision.</div>
 </header>
 <main>
  <div class="panel controls">
-  <button id="reset">Reset</button><button id="hint">Hint</button>
+  <button id="reset" title="Restart with the current cards">Reset</button><button id="randomCards" type="button">New random cards</button><button id="originalCards" type="button">Original example</button><button id="hint">Hint</button>
  </div>
  <div id="rule" class="rule"></div>
  <div class="panel">
@@ -78,7 +78,20 @@ select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;
  </div>
 </main>
 <script>
-const START=[3,5,2,3,1];
+const ORIGINAL=[3,5,2,3,1];
+let START=[...ORIGINAL], randomSet=false, cancelExchange=null;
+function newCards(){
+ let cards;
+ do {
+  cards=Array.from({length:5},()=>1+Math.floor(Math.random()*9));
+ }while(cards.every((v,i)=>i===0||cards[i-1]<=v)||
+        cards.every((v,i)=>v===START[i])||cards.every((v,i)=>v===ORIGINAL[i]));
+ return cards;
+}
+function refreshCardsLabel(){
+ $("cardsLabel").textContent=randomSet?"Random set":"Original example";
+ $("startingCards").textContent=START.join(", ");
+}
 const $=id=>document.getElementById(id);
 const midIndex=n=>Math.floor((n-1)/2);
 const pivotIndexFor=(arr,rule)=>rule==="first"?0:rule==="last"?arr.length-1:midIndex(arr.length);
@@ -107,7 +120,7 @@ function finish(arr,label){
  $("st").textContent="Complete"; $("hint").disabled=true; setMsg(`${label} complete: ${arr.join(", ")}. All cards are finished.`,"good");
  bind();
 }
-function reset(){
+function reset(){cancelExchange?.();refreshCardsLabel();
  a=[...START];$("hint").disabled=false;errors=C=S=0;drag=null;
  bPass=1;bI=0;bEnd=4;
  selPos=0;selJ=1;selMin=0;selPhase="start";
@@ -132,6 +145,7 @@ function bind(){
 // Animate a genuine exchange from the previous card positions to the new positions.
 // Call after the new cards have been rendered; no algorithm counts are affected.
 function animateCardExchange(left,right,before){
+ cancelExchange?.();
  const cards=[...document.querySelectorAll("#stage > .cards > .card")];
  if(!cards[left]||!cards[right]||!before)return;
  const L=cards[left],R=cards[right],lr=L.getBoundingClientRect(),rr=R.getBoundingClientRect();
@@ -167,9 +181,13 @@ function animateCardExchange(left,right,before){
   {transform:`translate(${-dx*.78}px,${arc*.8}px) rotate(-7deg) scale(1.17)`,offset:.75},
   {transform:`translate(${-dx}px,${-dy}px) scale(1)`,offset:1}
  ],{duration,easing,fill:"forwards"});
- Promise.all([up.finished.catch(()=>{}),down.finished.catch(()=>{})]).then(()=>{
+ const cleanup=()=>{
   overlay.remove();L.style.visibility="";R.style.visibility="";
- });
+  if(cancelExchange===cancel)cancelExchange=null;
+ };
+ const cancel=()=>{up.cancel();down.cancel();cleanup();};
+ cancelExchange=cancel;
+ Promise.all([up.finished.catch(()=>{}),down.finished.catch(()=>{})]).then(cleanup);
 }
 
 function render(){
@@ -371,6 +389,8 @@ $("hint").onclick=()=>{
 };
 if ($("pivot")) $("pivot").onchange=reset;
 $("reset").onclick=reset;
+$("randomCards").onclick=()=>{START=newCards();randomSet=true;reset();};
+$("originalCards").onclick=()=>{START=[...ORIGINAL];randomSet=false;reset();};
 reset();
 </script>
 </body>
