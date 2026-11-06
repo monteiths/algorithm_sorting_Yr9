@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A Year 9 animation comparing random page order with relevance ranking.">
+<title>Find the bike-chain guide | Techquity</title>
+<style>
+:root{font:100%/1.45 Arial,sans-serif;color:#24152c;background:#fff;--purple:#5a108f;--light:#f5eff9;--line:#dfd0eb;--green:#075b43}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}main{max-width:52rem;margin:auto;padding:clamp(.65rem,3vw,1.5rem)}
+article{border:1px solid var(--line);border-radius:1rem;overflow:hidden}header{background:var(--purple);color:#fff;padding:1rem 1.25rem}
+header p{margin:0;font-size:.75rem;font-weight:bold;letter-spacing:.1em}h1{font-size:clamp(1.45rem,4vw,2rem);line-height:1.13;margin:.4rem 0 .1rem}
+section{padding:clamp(.8rem,3vw,1.25rem)}.query{display:flex;align-items:center;gap:.55rem;border:1px solid var(--line);background:var(--light);border-radius:.6rem;padding:.55rem .75rem;margin:0 0 .8rem}.query svg{width:1.1rem;height:1.1rem;flex:none;color:var(--purple)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:0 0 .85rem}.stat{border:1px solid var(--line);border-radius:.6rem;padding:.45rem .65rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.15rem .5rem}.stat.active{border-color:var(--purple);background:var(--light)}.stat b{color:var(--purple);font-size:1.1rem;font-variant-numeric:tabular-nums}.stat span{font-size:.81rem}
+h2{font-size:1.13rem;margin:0 0 .2rem;color:var(--purple)}#note{margin:0 0 .65rem;min-height:2.9em;font-size:.91rem}#cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem;list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:.43rem;border:1px solid var(--line);border-radius:.5rem;padding:.4rem .5rem;min-height:3rem;background:white;font-size:.87rem;font-weight:bold;overflow-wrap:anywhere}li .number{font-size:.74rem;color:var(--purple);background:var(--light);border-radius:50%;width:1.38rem;height:1.38rem;display:grid;place-items:center;flex:none;font-variant-numeric:tabular-nums}.page-title{flex:1}li .badge{flex:none;color:var(--purple);font-size:.72rem;white-space:nowrap}
+li.current{background:#eee1fb;border-color:var(--purple);box-shadow:inset 0 0 0 1px var(--purple)}li.seen{background:#faf8fc;color:#5b5063}li.found{background:#e4f5ed;color:var(--green);border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}li.found .badge{color:var(--green)}
+.controls{display:flex;flex-wrap:wrap;gap:.55rem;margin:.85rem 0 0}button{font:inherit;font-weight:bold;border:1px solid var(--purple);border-radius:.55rem;background:var(--purple);color:white;padding:.5rem .85rem;min-height:44px;cursor:pointer}button.secondary{background:white;color:var(--purple)}button:disabled{opacity:.62;cursor:default}button:focus-visible{outline:3px solid #2469a1;outline-offset:3px}
+#takeaway{background:var(--light);border-left:3px solid var(--purple);padding:.55rem .75rem;margin:.85rem 0 0;font-size:.92rem}footer{padding:.65rem 1.25rem;border-top:1px solid var(--line);font-size:.8rem;color:#59475f}
+@media(max-width:420px){li{align-items:flex-start;font-size:.8rem;gap:.28rem;padding:.38rem .32rem;flex-wrap:wrap}li .badge{margin-left:1.67rem}li .number{width:1.3rem;height:1.3rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main><article>
+<header><p>TECHQUITY / YEAR 9 COMPUTER SCIENCE</p><h1>Find the bike-chain guide</h1></header>
+<section aria-label="Search ranking demonstration">
+<p class="query"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg><strong>how to fix a bike chain</strong></p>
+<div class="stats" aria-label="Results opened">
+<div class="stat active" id="randomStat"><span>Random order</span><b id="randomCount">0 opened</b></div>
+<div class="stat" id="rankedStat"><span>Ranked order</span><b id="rankedCount">—</b></div>
+</div>
+<h2 id="stage"></h2><p id="note" role="status"></p>
+<ol id="cards" aria-label="Search results in display order"></ol>
+<div class="controls"><button id="advance" type="button"></button><button id="reset" class="secondary" type="button" hidden>Start over</button></div>
+<p id="takeaway" hidden><strong>Class question:</strong> What could a search engine check besides words in a title to decide which page is most useful?</p>
+</section>
+<footer>This demo uses ten pretend pages and a simple title score. Real search engines look through an index and use many clues to rank matching pages.</footer>
+</article></main>
+<noscript>Enable JavaScript to play the search animation.</noscript>
+<script>
+const query = "how to fix a bike chain";
+const random = [
+  "School lunch menu", "Bike race highlights", "Weather in Christchurch", "Chain necklace ideas",
+  "Bike shop opening hours", "How to fix a flat tyre", "Guide to bike helmets", "Bike chain sizes",
+  "How to fix a bike chain", "Weekend walking tracks"
+];
+const goal = random[8];
+const score = title => {
+  const lower = title.toLowerCase();
+  const words = lower.match(/[a-z]+/g);
+  return ["bike","chain","fix"].filter(word => words.includes(word)).length + (lower.includes(query) ? 4 : 0);
+};
+const ranked = [...random].sort((a,b) => score(b)-score(a));
+const $ = id => document.getElementById(id);
+const list = $("cards"), advance = $("advance"), reset = $("reset");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+const rows = new Map();
+for (const title of random) {
+  const li = document.createElement("li"), number = document.createElement("span");
+  const name = document.createElement("span"), badge = document.createElement("span");
+  number.className = "number"; number.setAttribute("aria-hidden","true");
+  name.className = "page-title"; name.textContent = title;
+  badge.className = "badge";
+  li.append(number,name,badge); rows.set(title,{li,number,badge});
+}
+let phase, run = 0;
+function showOrder(order, scores = false, animate = false) {
+  const before = new Map();
+  for (const {li} of rows.values()) {
+    li.getAnimations?.().forEach(animation => animation.cancel());
+    if (animate) before.set(li,li.getBoundingClientRect());
+  }
+  for (const [i,title] of order.entries()) {
+    const {li,number,badge} = rows.get(title);
+    number.textContent = i+1; badge.textContent = scores ? score(title)+" pts" : "";
+    li.className = ""; list.append(li);
+  }
+  if (animate && !reduced.matches) for (const {li} of rows.values()) {
+    const old = before.get(li), now = li.getBoundingClientRect();
+    const x = old.left-now.left, y = old.top-now.top;
+    if (x || y) li.animate([{transform:`translate(${x}px,${y}px)`},{transform:"translate(0,0)"}],
+      {duration:650,easing:"cubic-bezier(.22,.78,.24,1)"});
+  }
+}
+function label(title,note,action) {
+  $("stage").textContent = title; $("note").textContent = note; advance.textContent = action;
+  advance.disabled = false;
+}
+function initialise() {
+  run++; phase = "ready"; showOrder(random);
+  $("randomStat").classList.add("active"); $("rankedStat").classList.remove("active");
+  $("randomCount").textContent = "0 opened"; $("rankedCount").textContent = "—";
+  $("takeaway").hidden = true; reset.hidden = true;
+  label("1 · Random order","In this example, pages are listed in a random order. Open them from the top until you find the guide.","Play random search");
+}
+const wait = ms => new Promise(resolve=>setTimeout(resolve,ms));
+async function scan(order, isRanked) {
+  const id = ++run;
+  let opened = 0;
+  advance.disabled = true; reset.hidden = false;
+  advance.textContent = "Opening pages…";
+  const counter = $(isRanked ? "rankedCount" : "randomCount");
+  for (const title of order) {
+    if (id !== run) return;
+    const {li,badge} = rows.get(title);
+    li.className = "current"; counter.textContent = ++opened+" opened";
+    await wait(reduced.matches ? 170 : 480);
+    if (id !== run) return;
+    if (title === goal) {
+      li.className = "found"; badge.textContent = "Guide found"; break;
+    }
+    li.className = "seen";
+  }
+  if (!isRanked) {
+    phase = "rank";
+    label("1 · Guide found",`You opened ${opened} pages. Random order can get lucky, but it gives useful pages no head start.`,"Rank the same pages");
+  } else {
+    phase = "done"; $("takeaway").hidden = false;
+    label("3 · Guide found",`Same pages, same search. Ranking put the guide first: ${opened} page opened instead of ${random.indexOf(goal)+1}.`,"Replay demo");
+  }
+}
+advance.addEventListener("click", () => {
+  if (phase === "ready") scan(random,false);
+  else if (phase === "rank") {
+    phase = "ranked";
+    $("randomStat").classList.remove("active"); $("rankedStat").classList.add("active"); $("rankedCount").textContent = "0 opened";
+    showOrder(ranked,true,true);
+    label("2 · Rank by relevance","Give 1 point each for bike, chain and fix in the title, plus 4 for the exact search phrase. Put the highest scores first.","Play ranked search");
+  } else if (phase === "ranked") scan(ranked,true);
+  else if (phase === "done") { initialise(); scan(random,false); }
+});
+reset.addEventListener("click", () => { initialise(); advance.focus(); });
+initialise();
+</script>
+</body>
+</html>
