@@ -1,0 +1,497 @@
+<!doctype html><html lang="en-NZ"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quicksort · Sorting Algorithms</title><style>
+:focus-visible{outline:3px solid #2b6dac;outline-offset:3px}
+
+:root{--purple:#651394;--purple2:#8a35b4;--ink:#262331;--muted:#6e6a75;--paper:#fbfafc;--line:#ddd7e2;--yellow:#fff1b8;--yellowLine:#c69210;--green:#dff5e9;--greenLine:#23855f;--pink:#f0ddf8;--bad:#fde2e2;--badLine:#c73535}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header,main{max-width:1080px;margin:auto;padding:18px}header{padding-bottom:7px}
+.kicker{font-weight:900;color:var(--purple);letter-spacing:.04em;font-size:.82rem}
+h1{color:var(--purple);font-size:clamp(1.7rem,4vw,2.65rem);margin:.3rem 0}.lead{color:var(--muted);line-height:1.5}
+.rule{background:var(--purple);color:white;padding:18px;border-radius:10px;font-weight:900;letter-spacing:.03em;margin:14px 0}
+.panel{background:white;border:1px solid #eee9f1;border-radius:13px;padding:16px;margin:12px 0;box-shadow:0 5px 20px rgba(52,35,66,.06)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end}label{display:grid;gap:5px;font-size:.76rem;font-weight:900;color:var(--muted)}
+select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:white}button{cursor:pointer;font-weight:800}
+.primary{background:var(--purple);color:white;border-color:var(--purple)}button:disabled{opacity:.45;cursor:not-allowed}
+.cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:130px;padding:18px 4px 34px}
+.card{width:74px;height:96px;border:2px solid #aaa5ae;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:2.15rem;font-weight:900;position:relative;user-select:none}
+.card.active{background:var(--yellow);border-color:var(--yellowLine);color:#8b6500}.card.finished{background:var(--green);border-color:var(--greenLine);color:#116444}
+.card.pivot{background:var(--pink);border-color:var(--purple);color:var(--purple)}.card.bad{background:var(--bad);border-color:var(--badLine)}
+.card[draggable=true]{cursor:grab}.tag{position:absolute;bottom:-24px;font-size:.63rem;color:var(--muted);font-weight:900;white-space:nowrap}
+.msg{padding:13px 15px;border-left:5px solid var(--purple);background:#f5eef9;border-radius:8px;line-height:1.45;font-weight:700;min-height:50px}
+.msg.good{background:#edf9f2;border-color:var(--greenLine);color:#155d43}.msg.bad{background:#fff0f0;border-color:var(--badLine);color:#8d2424}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.stat{text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px}.stat b{display:block;font-size:1.25rem}.stat small{color:var(--muted);font-weight:800}
+.bins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.bin{min-height:125px;border:2px dashed var(--line);border-radius:10px;padding:10px;text-align:center}.bin h3{margin:0 0 8px;color:var(--purple);font-size:.86rem}.bin .cards{min-height:70px;padding:4px}
+.stepbox{background:#faf7fc;border-radius:10px;padding:13px;margin:8px 0}.stepbox b{color:var(--purple)}
+.cert{display:none;text-align:center;border:6px double var(--purple);padding:32px;background:white}.cert.show{display:block}
+.progress{height:9px;background:#e8e3eb;border-radius:99px;overflow:hidden}.progress div{height:100%;background:var(--purple)}
+@media(max-width:650px){.card{width:58px;height:78px;font-size:1.65rem}.bins{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media print{body>*:not(main),main>*:not(.cert){display:none!important}.cert{display:block!important}}
+
+
+
+/* Card exchange: two cards visibly cross paths rather than teleport. */
+.card.swap-moving{z-index:3;transition:transform 750ms cubic-bezier(.25,.7,.25,1);will-change:transform}
+.card.swap-moving.swap-over{z-index:4}
+@media(prefers-reduced-motion:reduce){.card.swap-moving{transition-duration:0ms}}
+
+.selection-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.selection-choice{border:3px dashed #b8a4c7;border-radius:13px;padding:12px;min-height:105px;background:#fbf8fd;text-align:center}.selection-choice strong{display:block;color:var(--purple);font-size:.91rem}.selection-choice .choice-value{font-size:1.9rem;font-weight:900;margin:6px auto}.selection-choice.chosen{border-color:var(--greenLine);background:#eaf8ef}.selection-choice.chosen strong{color:#116444}.selection-choice small{display:block;color:var(--muted)}@media(max-width:550px){.selection-choices{grid-template-columns:1fr}}
+
+/* Selection Sort: physical cards leave numbered placeholders and travel to decision bays. */
+.selection-track{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:130px;padding:18px 4px 34px}
+.selection-placeholder{width:74px;height:96px;border:3px dashed #b9a7c8;border-radius:9px;display:grid;place-items:center;background:#faf5fd;color:#765b8d;font-size:.72rem;font-weight:800;text-align:center;position:relative}
+.selection-placeholder .position-label{position:absolute;bottom:-24px;white-space:nowrap;color:var(--muted);font-size:.65rem}
+.selection-bay-card{width:74px;height:96px;margin:8px auto 4px;border:2px solid var(--yellowLine);border-radius:9px;background:var(--yellow);display:grid;place-items:center;font-size:2.15rem;font-weight:900;color:#8b6500;box-shadow:0 6px 12px #3b225422}
+.selection-choice.chosen .selection-bay-card{border-color:var(--greenLine);background:var(--green);color:#116444}
+.selection-choice .selection-bay-card{position:relative}
+@media(max-width:650px){.selection-placeholder,.selection-bay-card{width:58px;height:78px;font-size:1.65rem}}
+.quick-page .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:430px){header,main{padding:10px}.panel{padding:10px}.cards,.selection-track{gap:4px}.card,.selection-placeholder{width:clamp(38px,13vw,53px);height:64px}.selection-placeholder{font-size:.53rem}.selection-placeholder .position-label{font-size:.48rem}.selection-choices{gap:6px}.msg{font-size:.92rem}}
+</style></head><body>
+<header><div class="kicker">TECHQUITY / COMPUTER SCIENCE / WE LEARN</div><h1>Quicksort</h1><div class="lead">Start unsorted: <b>3, 5, 2, 3, 1</b>. Use <b>Next</b> to watch one step at a time.</div></header><main class="quick-page">
+<div class="panel controls"><label id="pivotWrap">Pivot rule<select id="pivot"><option value="first">First card</option><option value="last">Last card</option><option value="middle">Middle position</option></select></label><button id="reset">Reset</button><button id="prev">← Previous</button><button id="next" class="primary">Next →</button></div>
+<div id="rule" class="rule"></div><div class="panel"><div id="stage"></div><div id="msg" class="msg" role="status" aria-atomic="true"></div><div class="stats"><div class="stat"><b id="c">0</b><small>Cards classified</small></div><div hidden><b id="s">0</b></div><div class="stat"><b id="p">0</b><small>Partition</small></div><div class="stat"><b id="st">Ready</b><small>Status</small></div></div></div>
+<div id="selftest" style="display:none"></div></main><script>
+
+const START=[3,5,2,3,1];
+const $=id=>document.getElementById(id);
+function midIndex(n){return Math.floor((n-1)/2)} // left-middle for even groups, matching the guide
+function pivotFor(arr,rule){return rule==="first"?arr[0]:rule==="last"?arr[arr.length-1]:arr[midIndex(arr.length)]}
+function bubbleTrace(input){
+ let a=[...input],steps=[],C=0,S=0,passes=0;
+ for(let end=a.length-1;end>0;end--){
+  let changed=false; passes++;
+  for(let i=0;i<end;i++){
+   const before=[...a],swap=a[i]>a[i+1];
+   C++;
+   steps.push({type:"compare",i,j:i+1,swap,before,after:[...a],C,S,pass:passes,finishedFrom:end});
+   if(swap){[a[i],a[i+1]]=[a[i+1],a[i]];S++;changed=true}
+   steps.push({type:"decision",i,j:i+1,swap,before,after:[...a],C,S,pass:passes,finishedFrom:end});
+  }
+  steps.push({type:"passEnd",after:[...a],C,S,pass:passes,finishedFrom:end,unchanged:!changed});
+  if(!changed)break;
+ }
+ return {steps,result:a,C,S,passes};
+}
+function selectionTrace(input){
+ let a=[...input],steps=[],C=0,S=0,rounds=0;
+ for(let pos=0;pos<a.length-1;pos++){
+  rounds++; let min=pos;
+  // Explicitly show the first unsorted card being marked as the starting minimum.
+  // This is not counted as a scan/comparison.
+  steps.push({type:"selstart",pos,min,C,S,round:rounds,state:[...a]});
+  for(let j=pos+1;j<a.length;j++){
+   C++; let old=min;if(a[j]<a[min])min=j;
+   steps.push({type:"scan",pos,j,oldMin:old,min,C,S,round:rounds,state:[...a]});
+  }
+  steps.push({type:"selconfirm",pos,min,C,S,round:rounds,state:[...a]});
+  if(min!==pos){let before=[...a];[a[pos],a[min]]=[a[min],a[pos]];S++;steps.push({type:"selswap",pos,min,before,after:[...a],C,S,round:rounds})}
+  steps.push({type:"selfixed",pos,state:[...a],C,S,round:rounds});
+ }
+ return {steps,result:a,C,S,rounds};
+}
+function quickTrace(input,rule){
+ let scans=0,parts=0,events=[];
+ function q(arr,path="whole"){
+  if(arr.length<=1)return [...arr];
+  let pivot=pivotFor(arr,rule),less=[],equal=[],greater=[];parts++;
+  events.push({type:"partitionStart",arr:[...arr],pivot,path,parts,scans});
+  const pivotIndex=rule==="first"?0:rule==="last"?arr.length-1:midIndex(arr.length);
+  const visitOrder=[pivotIndex,...arr.map((_,i)=>i).filter(i=>i!==pivotIndex)];
+  let classified=[];
+  visitOrder.forEach(idx=>{const v=arr[idx];classified.push(idx);
+   scans++;
+   let group=v<pivot?"less":v>pivot?"greater":"equal";
+   if(group==="less")less.push(v);else if(group==="greater")greater.push(v);else equal.push(v);
+   events.push({type:"classify",arr:[...arr],pivot,value:v,index:idx,group,less:[...less],equal:[...equal],greater:[...greater],parts,scans,path,classified:[...classified]});
+  });
+  let L=q(less,path+".L"),G=q(greater,path+".G");
+  let joined=[...L,...equal,...G];events.push({type:"join",pivot,path,joined:[...joined],parts,scans});
+  return joined;
+ }
+ let result=q([...input]);return {events,result,scans,parts};
+}
+function eq(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+function selfTests(){
+ let failures=[];
+ let b=bubbleTrace(START);
+ if(!eq(b.result,[1,2,3,3,5]))failures.push("bubble result");
+ if(b.C!==10||b.S!==7||b.passes!==4)failures.push(`bubble counts ${b.C}/${b.S}/${b.passes}`);
+ if(!(b.steps[0].i===0&&b.steps[0].j===1&&!b.steps[0].swap))failures.push("bubble first comparison");
+ let s=selectionTrace(START);
+ if(!eq(s.result,[1,2,3,3,5])||s.C!==10||s.S!==4||s.rounds!==4)failures.push("selection trace");
+ let q1=quickTrace(START,"first"),ql=quickTrace(START,"last"),qm=quickTrace(START,"middle");
+ if(!eq(q1.result,[1,2,3,3,5])||q1.scans!==7||q1.parts!==2)failures.push("quick first");
+ if(!eq(ql.result,[1,2,3,3,5])||ql.scans!==9||ql.parts!==2)failures.push("quick last");
+ if(!eq(qm.result,[1,2,3,3,5])||qm.scans!==10||qm.parts!==3)failures.push("quick middle");
+ if(pivotFor(START,"middle")!==2)failures.push("middle pivot");
+ return failures;
+}
+
+</script><script>
+const ALGORITHM="quick";
+let idx=-1,trace=null;
+function cards(arr,active=[],finished=[],pivotIndex=null){return `<div class="cards">${arr.map((v,i)=>`<div class="card ${active.includes(i)?"active":""} ${finished.includes(i)?"finished":""} ${pivotIndex===i?"pivot":""}">${v}</div>`).join("")}</div>`}
+function reset(){idx=-1;let alg=ALGORITHM;trace=alg==="bubble"?bubbleTrace(START):alg==="selection"?selectionTrace(START):quickTrace(START,$("pivot").value);render()}
+
+// Animate a genuine exchange from the previous card positions to the new positions.
+// Call after the new cards have been rendered; no algorithm counts are affected.
+function animateCardExchange(left,right,before){
+ const cards=[...document.querySelectorAll("#stage > .cards > .card")];
+ if(!cards[left]||!cards[right]||!before)return;
+ const L=cards[left],R=cards[right],lr=L.getBoundingClientRect(),rr=R.getBoundingClientRect();
+ // The final values have already been rendered. Hide them while two temporary
+ // cards with the ORIGINAL values visibly travel along opposite sweeping arcs.
+ L.style.visibility="hidden";R.style.visibility="hidden";
+ const overlay=document.createElement("div");
+ overlay.setAttribute("aria-hidden","true");
+ overlay.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:visible";
+ document.body.appendChild(overlay);
+ const duration=1850,dx=rr.left-lr.left,dy=rr.top-lr.top;
+ const create=(value,rect)=>{
+   const node=L.cloneNode(false);
+   node.textContent=value;
+   node.className="card active";
+   node.style.cssText=`position:absolute;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;box-sizing:border-box;display:grid;place-items:center;transform-origin:center;box-shadow:0 8px 18px rgba(45,20,65,.2)`;
+   overlay.appendChild(node);return node;
+ };
+ const leftCard=create(before[left],lr),rightCard=create(before[right],rr);
+ const easing="cubic-bezier(.45,0,.55,1)";
+ const arc=Math.max(87.5,Math.min(117.5,window.innerHeight*.125));
+ const up=leftCard.animate([
+  {transform:"translate(0px,0px) scale(1)",offset:0},
+  {transform:`translate(${dx*.22}px,${-arc*.8}px) rotate(-7deg) scale(1.17)`,offset:.25},
+  {transform:`translate(${dx*.5}px,${-arc}px) rotate(0deg) scale(1.24)`,offset:.5},
+  {transform:`translate(${dx*.78}px,${-arc*.8}px) rotate(7deg) scale(1.17)`,offset:.75},
+  {transform:`translate(${dx}px,${dy}px) scale(1)`,offset:1}
+ ],{duration,easing,fill:"forwards"});
+ const down=rightCard.animate([
+  {transform:"translate(0px,0px) scale(1)",offset:0},
+  {transform:`translate(${-dx*.22}px,${arc*.8}px) rotate(7deg) scale(1.17)`,offset:.25},
+  {transform:`translate(${-dx*.5}px,${arc}px) rotate(0deg) scale(1.24)`,offset:.5},
+  {transform:`translate(${-dx*.78}px,${arc*.8}px) rotate(-7deg) scale(1.17)`,offset:.75},
+  {transform:`translate(${-dx}px,${-dy}px) scale(1)`,offset:1}
+ ],{duration,easing,fill:"forwards"});
+ Promise.all([up.finished.catch(()=>{}),down.finished.catch(()=>{})]).then(()=>{
+  overlay.remove();L.style.visibility="";R.style.visibility="";
+ });
+}
+
+
+let selectionAnimating=false;
+function animateSelectionHoldingAreas(reverse=false,onlyCandidate=false,onlyMinimum=false){
+ const stage=$("stage"),e=trace.steps[idx];
+ if(!e||e.type!=="scan")return Promise.resolve();
+ const bays=[stage.querySelector('[data-selection-dest="keep"]'),stage.querySelector('[data-selection-dest="new"]')];
+ const sources=[e.oldMin,e.j].map(i=>stage.querySelector('[data-source-index="'+i+'"]'));
+ if(bays.some(v=>!v)||sources.some(v=>!v))return Promise.resolve();
+ const overlay=document.createElement("div");
+ overlay.setAttribute("aria-hidden","true");
+ overlay.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:visible";
+ document.body.appendChild(overlay);
+ const animations=[];
+ bays.forEach((target,k)=>{
+  if(onlyCandidate&&k===0)return;
+  if(onlyMinimum&&k===1)return;
+  const from=sources[k].getBoundingClientRect(),to=target.getBoundingClientRect();
+  const dx=to.left-from.left,dy=to.top-from.top;
+  const ghost=document.createElement("div");
+  ghost.textContent=e.state[k===0?e.oldMin:e.j];
+  ghost.className="selection-bay-card";
+  const origin=reverse?to:from;
+  ghost.style.cssText=`position:absolute;margin:0;left:${origin.left}px;top:${origin.top}px;width:${origin.width}px;height:${origin.height}px;display:grid;place-items:center;box-sizing:border-box;background:var(--yellow);border:2px solid var(--yellowLine);border-radius:9px;font-size:2.15rem;font-weight:900;color:#8b6500;box-shadow:0 10px 24px #3b225455`;
+  overlay.appendChild(ghost);
+  target.style.visibility="hidden";
+  const x=reverse?-dx:dx, yy=reverse?-dy:dy, sweep=(k===0?-75:75)*(reverse?-1:1);
+  const keyframes=[
+   {transform:"translate(0px,0px) scale(1)",offset:0},
+   {transform:`translate(${x*.25}px,${yy*.25+sweep*.7}px) scale(1.08)`,offset:.25},
+   {transform:`translate(${x*.5}px,${yy*.5+sweep}px) scale(1.13)`,offset:.5},
+   {transform:`translate(${x*.75}px,${yy*.75+sweep*.7}px) scale(1.08)`,offset:.75},
+   {transform:`translate(${x}px,${yy}px) scale(1)`,offset:1}
+  ];
+  const animation=ghost.animate(keyframes,{duration:1150,easing:"cubic-bezier(.45,0,.55,1)",fill:"forwards"});
+  animations.push(animation.finished.catch(()=>{}));
+ });
+ return Promise.all(animations).then(()=>{overlay.remove();bays.forEach(v=>v.style.visibility="")});
+}
+
+function render(){
+ let alg=ALGORITHM,stage=$("stage");$("prev").disabled=idx<0; $("next").disabled=idx>=(alg==="quick"?trace.events.length:trace.steps.length);
+
+ if(alg==="bubble"){
+   $("rule").textContent="COMPARE NEIGHBOURS → SWAP IF NEEDED → MOVE RIGHT";
+   if(idx>=trace.steps.length){
+     stage.innerHTML=cards(trace.result,[],[0,1,2,3,4]);
+     $("c").textContent=trace.C;$("s").textContent=trace.S;$("p").textContent=trace.passes;
+     $("msg").textContent="Bubble Sort complete: 1, 2, 3, 3, 5. All cards are now finished.";
+     $("st").textContent="Complete";
+     return;
+   }
+   let e=idx<0?null:trace.steps[idx],arr=e?e.after:START,active=e?[e.i,e.j]:[],finished=[];
+   if(e&&e.type==="passEnd"){finished=Array.from({length:START.length-e.finishedFrom},(_,k)=>e.finishedFrom+k)}
+   if(e&&e.type==="decision"){
+     let next=trace.steps[idx+1];
+     // A card becomes green only at the explicit end-of-pass step.
+   }
+   stage.innerHTML=cards(arr,e&&e.type==="passEnd"?[]:active,finished);
+   $("c").textContent=e?e.C:0;$("s").textContent=e?e.S:0;$("p").textContent=e?e.pass:0;
+   $("msg").textContent=!e?"Start at the left: compare 3 and 5.":e.type==="passEnd"?`Pass ${e.pass} finished: the largest value in the unsorted section has reached its final position (green). ${e.unchanged?"No swaps occurred, so the entire list is already sorted.":"Next pass we can skip the green cards because they cannot be displaced by any larger value remaining to their left."}`:e.type==="compare"?`Pass ${e.pass}: COMPARE ${e.before[e.i]} and ${e.before[e.j]}. Will they need swapping? Click Next to see the decision.`:`Pass ${e.pass}: ${e.swap?"SWAP the two highlighted cards":"KEEP the two highlighted cards in place"}. Then move right.`;
+   $("st").textContent="Watching";
+
+ }else if(alg==="selection"){
+   $("rule").textContent="MARK MINIMUM → SCAN REMAINING VALUES → SWAP ONCE";
+   if(idx>=trace.steps.length){
+     stage.innerHTML=cards(trace.result,[],[0,1,2,3,4]);
+     $("c").textContent=trace.C;$("s").textContent=trace.S;$("p").textContent=trace.rounds;
+     $("msg").textContent="Selection Sort complete: 1, 2, 3, 3, 5. All positions are now finished.";
+     $("st").textContent="Complete";
+     return;
+   }
+   let e=idx<0?null:trace.steps[idx],arr=e?(e.after||e.state):START,active=[],fin=[];
+   if(e){
+     if(e.type==="selstart") active=[e.min];
+     if(e.type==="scan") active=e.min===e.j?[e.j]:[e.min,e.j];
+     if(e.type==="selswap") active=[e.pos,e.min];
+     if(e.type==="selfixed") fin=Array.from({length:e.pos+1},(_,k)=>k);
+   }
+   if(e&&e.type==="selconfirm") active=[e.min];
+   if(e&&e.type==="scan"){
+     // Two physical cards are lifted from the row, leaving visible position markers.
+     const oldMin=e.state[e.oldMin],candidate=e.state[e.j],newMin=e.state[e.min];
+     const choice=e.min===e.j?"new":"keep";
+     const held=new Set([e.oldMin,e.j]);
+     stage.innerHTML=`<div class="selection-track">${e.state.map((v,k)=>held.has(k)
+       ?`<div class="selection-placeholder" data-source-index="${k}"><span>EMPTY</span><span class="position-label">Position ${k+1}</span></div>`
+       :`<div class="card ${k<e.pos?"finished":""}">${v}</div>`).join("")}</div>
+       <div class="selection-choices" aria-label="Selection sort decision holding areas">
+         <div class="selection-choice ${choice==="keep"?"chosen":""}"><strong>KEEP CURRENT MINIMUM</strong>
+           <div class="selection-bay-card" data-selection-dest="keep">${oldMin}</div>
+           <small>${choice==="keep"?"✓ Keep "+oldMin+" as minimum":"Current minimum before decision"}</small></div>
+         <div class="selection-choice ${choice==="new"?"chosen":""}"><strong>MAKE CANDIDATE THE NEW MINIMUM</strong>
+           <div class="selection-bay-card" data-selection-dest="new">${candidate}</div>
+           <small>${choice==="new"?"✓ "+candidate+" replaces "+oldMin:"Candidate "+candidate+" is being tested"}</small></div>
+       </div><div class="msg good">Current minimum after comparison: ${newMin}. The cards return to their numbered positions for the next scan; no swap occurs until the full scan finishes.</div>`;
+   }else if(e&&e.type==="selconfirm"){
+     const held=new Set([e.min]);
+     stage.innerHTML=`<div class="selection-track">${e.state.map((v,k)=>held.has(k)
+       ?`<div class="selection-placeholder" data-source-index="${k}"><span>EMPTY</span><span class="position-label">Position ${k+1}</span></div>`
+       :`<div class="card ${k<e.pos?"finished":""}">${v}</div>`).join("")}</div>
+       <div class="selection-choices">
+         <div class="selection-choice chosen"><strong>KEEP CURRENT MINIMUM</strong>
+           <div class="selection-bay-card" data-selection-dest="keep" style="background:#c8f1d7;border-color:#27945c;color:#116444">${e.state[e.min]}</div>
+           <small>✓ Lowest value found</small></div>
+         <div class="selection-choice"><strong>MAKE CANDIDATE THE NEW MINIMUM</strong>
+           <div class="selection-bay-card" data-selection-dest="new" style="visibility:hidden"></div>
+           <small>Comparison finished</small></div>
+       </div>`;
+   }else{
+     stage.innerHTML=cards(arr,active,fin);
+   }
+   $("c").textContent=e?e.C:0;$("s").textContent=e?e.S:0;$("p").textContent=e?e.round:0;
+   if(!e){
+     $("msg").textContent="Round 1: mark 3 as the starting minimum. Scan every remaining card from left to right: 5, 2, 3, 1.";
+   }else if(e.type==="selstart"){
+     $("msg").textContent=`Round ${e.round}: mark ${e.state[e.min]} as the starting minimum. This is not counted as a scan.`;
+   }else if(e.type==="scan"){
+     const candidate=e.state[e.j];
+     $("msg").textContent=`Round ${e.round}: scan ${candidate}. ${e.min===e.j?candidate+" becomes the new minimum.":"It is not smaller than the current minimum. Keep scanning."}`;
+   }else if(e.type==="selconfirm"){
+     $("msg").textContent=`Round ${e.round}: We have found the lowest value in the unsorted list: ${e.state[e.min]}. Next: move it to the leftmost unsorted position.`;
+   }else if(e.type==="selswap"){
+     $("msg").textContent=`Round ${e.round}: we found the lowest value ${e.before[e.min]}. It moves to the leftmost unsorted position; the displaced card takes its previous place.`;
+   }else{
+     $("msg").textContent=`Round ${e.round} complete. Position ${e.pos+1} is finished.`;
+   }
+   $("st").textContent="Watching";
+
+ }else{
+   $("rule").textContent="CHOOSE PIVOT → PARTITION LEFT TO RIGHT → SORT OUTER GROUPS → JOIN";
+   if(idx>=trace.events.length){
+     stage.innerHTML=cards(trace.result,[],[0,1,2,3,4]);
+     $("c").textContent=trace.scans;$("s").textContent=0;$("p").textContent=trace.parts;
+     $("msg").textContent=`Quick Sort complete: ${trace.result.join(", ")}.`;
+     $("st").textContent="Complete";
+     return;
+   }
+   let e=idx<0?null:trace.events[idx];
+   let base=e ? (e.type==="join" ? e.joined : (e.arr||START)) : START;
+   let pv=e?.pivot??pivotFor(START,$("pivot").value);
+   let pivotIndex=null;
+   if(!e){
+     pivotIndex=$("pivot").value==="first"?0:$("pivot").value==="last"?START.length-1:midIndex(START.length);
+   }else if(e.type==="partitionStart"||e.type==="classify"){
+     pivotIndex=$("pivot").value==="first"?0:$("pivot").value==="last"?e.arr.length-1:midIndex(e.arr.length);
+   }
+   let bins=e&&(e.type==="classify"||e.type==="partitionStart")?`<div class="bins"><div class="bin"><h3>LESS than ${pv}</h3>${cards(e.less||[])}</div><div class="bin"><h3>EQUAL to ${pv}</h3>${cards(e.equal||[])}</div><div class="bin"><h3>GREATER than ${pv}</h3>${cards(e.greater||[])}</div></div>`:"";
+   stage.innerHTML=`${cards(base,e&&e.type==="classify"?[e.index]:[],[],pivotIndex)}${bins}`;
+   if(e?.type==="classify"){
+    const row=stage.querySelector(".cards");
+    [...row.children].forEach((card,k)=>{if(e.classified.includes(k))card.style.visibility="hidden";});
+   }
+   $("c").textContent=e?e.scans:0;$("s").textContent=0;$("p").textContent=e?e.parts:0;
+   $("msg").textContent=!e?`Choose the ${$("pivot").value} pivot (${pv}). Move the chosen pivot into EQUAL first, then classify the remaining cards into LESS / EQUAL / GREATER.`:e.type==="partitionStart"?`New group: choose pivot ${e.pivot}. Move the pivot into EQUAL first, then classify the other cards.`:e.type==="classify"?`Scan ${e.value}: place it in ${e.group.toUpperCase()}. Order of arrival is preserved.`:`Join sorted less + equal + sorted greater: ${e.joined.join(", ")}.`;
+   $("st").textContent="Watching";
+ }
+}
+async function animateSelectionTransition(current,incoming){
+ const stage=$("stage");
+ const keep=stage.querySelector('[data-selection-dest="keep"]');
+ const candidate=stage.querySelector('[data-selection-dest="new"]');
+ if(!keep||!candidate)return;
+ const winning=current.min===current.j;
+ const fromKeep=keep.getBoundingClientRect(),fromCandidate=candidate.getBoundingClientRect();
+ const oldPosition=stage.querySelector('[data-source-index="'+current.oldMin+'"]');
+ const candidatePosition=stage.querySelector('[data-source-index="'+current.j+'"]');
+ const nextPosition=incoming?.type==="scan"?stage.querySelectorAll(".selection-track > *")[incoming.j]:null;
+ const animations=[];
+ const overlay=document.createElement("div");overlay.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999";overlay.setAttribute("aria-hidden","true");document.body.appendChild(overlay);
+ const travel=(value,from,to)=>{
+  if(!to)return;
+  const ghost=document.createElement("div");ghost.textContent=value;ghost.className="selection-bay-card";
+  ghost.style.cssText=`position:absolute;left:${from.left}px;top:${from.top}px;width:${from.width}px;height:${from.height}px;margin:0;display:grid;place-items:center;box-sizing:border-box;background:var(--yellow);border:2px solid var(--yellowLine);border-radius:9px;font-size:2.15rem;font-weight:900;color:#8b6500;box-shadow:0 10px 24px #3b225455`;
+  overlay.appendChild(ghost);
+  const dx=to.left-from.left,dy=to.top-from.top;
+  const animation=ghost.animate([{transform:"translate(0,0)"},{transform:`translate(${dx*.5}px,${dy*.5-48}px) scale(1.12)`,offset:.5},{transform:`translate(${dx}px,${dy}px)`}],{duration:1150,easing:"cubic-bezier(.45,0,.55,1)",fill:"forwards"});
+  animations.push(animation.finished.catch(()=>{}));
+ };
+ // A travelling card must no longer appear in its departure box.
+ // The animated ghost is the only visible copy until it reaches its destination.
+ candidate.style.visibility="hidden";
+ if(winning)keep.style.visibility="hidden";
+ // Keep the minimum parked in its box unless a smaller candidate replaces it.
+ if(winning){
+  travel(current.state[current.oldMin],fromKeep,oldPosition?.getBoundingClientRect());
+  travel(current.state[current.j],fromCandidate,fromKeep);
+ }else{
+  travel(current.state[current.j],fromCandidate,candidatePosition?.getBoundingClientRect());
+ }
+ // At the end of a round, leave the winning minimum in its holding box.
+ // Its direct journey to the leftmost unsorted position happens in the next
+ // explicit confirmation/placement step, not via its original position.
+ if(incoming?.type!=="scan"&&winning){
+  await Promise.all(animations);
+  animations.length=0;
+ }
+ // Finish the previous comparison completely before introducing the next card.
+ await Promise.all(animations);
+ animations.length=0;
+ // Only now does the next candidate descend. No three-card overlap.
+ if(incoming?.type==="scan"&&nextPosition){
+  travel(incoming.state[incoming.j],nextPosition.getBoundingClientRect(),fromCandidate);
+  await Promise.all(animations);
+ }
+
+ overlay.remove();
+ candidate.style.visibility="";
+ keep.style.visibility="";
+}
+async function animateSelectionFinalPlacement(current){
+ const stage=$("stage"),track=[...stage.querySelectorAll(".selection-track > *")];
+ const keep=stage.querySelector('[data-selection-dest="keep"]');
+ const candidate=stage.querySelector('[data-selection-dest="new"]');
+ if(!keep||!track[current.pos]||!track[current.min])return;
+ const minimum=current.state[current.min],displaced=current.state[current.pos];
+ const winnerSource=keep;
+ // The final candidate may just have replaced the old minimum. The winning
+ // value is held below the list until this separate placement animation.
+ const from=winnerSource.getBoundingClientRect();
+ const to=track[current.pos].getBoundingClientRect();
+ const overlay=document.createElement("div");
+ overlay.setAttribute("aria-hidden","true");
+ overlay.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999";
+ document.body.appendChild(overlay);
+ const motions=[];
+ function move(value,start,finish,green=false){
+  const ghost=document.createElement("div");
+  ghost.textContent=value;ghost.className="selection-bay-card";
+  ghost.style.cssText=`position:absolute;left:${start.left}px;top:${start.top}px;width:${start.width}px;height:${start.height}px;margin:0;display:grid;place-items:center;box-sizing:border-box;border:3px solid ${green?"#27945c":"var(--yellowLine)"};border-radius:9px;background:${green?"#c8f1d7":"var(--yellow)"};color:${green?"#116444":"#8b6500"};font-size:2.15rem;font-weight:900;box-shadow:0 10px 24px #3b225455`;
+  overlay.appendChild(ghost);
+  const dx=finish.left-start.left,dy=finish.top-start.top;
+  const anim=ghost.animate([{transform:"translate(0,0)"},{transform:`translate(${dx*.5}px,${dy*.5-55}px) scale(1.13)`,offset:.5},{transform:`translate(${dx}px,${dy}px)`}],{duration:1350,easing:"cubic-bezier(.45,0,.55,1)",fill:"forwards"});
+  motions.push(anim.finished.catch(()=>{}));
+ }
+ $("msg").textContent=`We have found the lowest value in the unsorted list: ${minimum}. Move it directly to the leftmost unsorted position!`;
+ winnerSource.style.visibility="hidden";
+ move(minimum,from,to,true);
+ if(current.min!==current.pos){
+  // The displaced leftmost card moves to the minimum's old slot: one swap.
+  const displacedStart=track[current.pos].getBoundingClientRect();
+  const displacedEnd=track[current.min].getBoundingClientRect();
+  move(displaced,displacedStart,displacedEnd);
+ }
+ await Promise.all(motions);
+ overlay.remove();
+ winnerSource.style.visibility="";
+}
+async function animateQuickClassification(event){
+ const stage=$("stage");
+ const source=stage.querySelectorAll(".cards")[0]?.children[event.index];
+ const binIndex={less:0,equal:1,greater:2}[event.group];
+ const bin=stage.querySelectorAll(".bins > .bin")[binIndex];
+ const target=bin?.querySelector(".cards > .card:last-child");
+ if(!source||!target)return;
+ const start=source.getBoundingClientRect(),end=target.getBoundingClientRect();
+ // Reserve the destination without displaying the card until its flight ends.
+ source.style.visibility="hidden";
+ target.style.visibility="hidden";
+ const overlay=document.createElement("div");
+ overlay.setAttribute("aria-hidden","true");
+ overlay.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:visible";
+ const ghost=source.cloneNode(true);
+ ghost.textContent=event.value;
+ ghost.style.cssText=`position:absolute;left:${start.left}px;top:${start.top}px;width:${start.width}px;height:${start.height}px;display:grid;place-items:center;box-sizing:border-box;margin:0;box-shadow:0 10px 24px #3b225455`;
+ overlay.appendChild(ghost);
+ document.body.appendChild(overlay);
+ // Allow the hidden destination and source to paint before starting the flight.
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ const dx=end.left-start.left,dy=end.top-start.top;
+ const arc=Math.max(87.5,Math.min(117.5,window.innerHeight*.125));
+ const anim=ghost.animate([
+  {transform:"translate(0px,0px) scale(1)",offset:0},
+  {transform:`translate(${dx*.25}px,${dy*.25-arc*.7}px) scale(1.12)`,offset:.25},
+  {transform:`translate(${dx*.5}px,${dy*.5-arc}px) scale(1.18)`,offset:.5},
+  {transform:`translate(${dx*.75}px,${dy*.75-arc*.7}px) scale(1.12)`,offset:.75},
+  {transform:`translate(${dx}px,${dy}px) scale(1)`,offset:1}
+ ],{duration:1850,easing:"cubic-bezier(.45,0,.55,1)",fill:"forwards"});
+ await anim.finished.catch(()=>{});
+ overlay.remove();
+ target.style.visibility="";
+}
+async function moveStep(direction){
+ if(selectionAnimating)return;
+ const alg=ALGORITHM,steps=alg==="quick"?trace.events:trace.steps;
+ const nextIndex=Math.max(-1,Math.min(steps.length,idx+direction));
+ if(nextIndex===idx)return;
+ selectionAnimating=true;$("next").disabled=true;$("prev").disabled=true;
+ try{
+  const current=alg==="selection"?trace.steps[idx]:null;
+  const incoming=alg==="selection"?trace.steps[nextIndex]:alg==="quick"?trace.events[nextIndex]:null;
+  const forwardScan=direction>0&&current?.type==="scan";
+  if(forwardScan){
+   await animateSelectionTransition(current,incoming);
+
+  }
+  if(alg==="selection"&&direction>0&&current?.type==="selconfirm"&&(incoming?.type==="selswap"||incoming?.type==="selfixed")){
+   await animateSelectionFinalPlacement(current);
+  }
+  idx=nextIndex;render();
+  if(alg==="quick"&&direction>0&&incoming?.type==="classify"){
+   await animateQuickClassification(incoming);
+  }
+  if(alg==="bubble"){
+   const e=trace.steps[idx];
+   if(e&&e.type==="decision"&&e.swap&&direction>0)animateCardExchange(e.i,e.j,e.before);
+  }
+  if(alg==="selection"&&incoming?.type==="scan"&&!forwardScan){
+   await animateSelectionHoldingAreas(false);
+  }
+ }finally{
+  selectionAnimating=false;$("next").disabled=idx>=steps.length;$("prev").disabled=idx<0;
+ }
+}
+$("next").onclick=()=>moveStep(1);
+$("prev").onclick=()=>moveStep(-1);
+$("reset").onclick=()=>{if(!selectionAnimating)reset()};
+if ($("pivot")) $("pivot").onchange=()=>{if(!selectionAnimating)reset()};
+reset();
+let f=selfTests();if(location.search.includes("selftest")){$("selftest").style.display="block";$("selftest").textContent=f.length?"SELFTEST FAIL: "+f.join(", "):"SELFTEST PASS";}
+</script></body></html>
