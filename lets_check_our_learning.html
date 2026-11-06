@@ -41,37 +41,43 @@ select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;
 .cert{display:none;max-width:820px;margin:30px auto;padding:42px;border:5px solid #5a2ca0;border-radius:18px;text-align:center;background:white}.cert.show{display:block}
 input{font:inherit;padding:10px;border:1px solid #bbb;border-radius:8px}
 .mcqanswers{display:grid;gap:12px;margin:18px 0}.answer{padding:16px;text-align:left;font-size:1rem;border:2px solid #ddd;border-radius:12px;background:white;cursor:pointer}.answer.correct{background:#e6f4e8;border-color:#2e7d32}.answer.wronganswer{background:#ffd9d9;border-color:#c62828}.cert #result{font-size:1.1rem;line-height:1.7}
-[hidden]{display:none!important}.cert-controls{display:grid;justify-items:center;gap:8px;margin-top:20px}.cert-controls label{display:block;font-weight:bold}.cert-controls input{max-width:100%;width:min(100%,320px)}#emailForm{display:grid;justify-items:center;gap:8px;width:100%;padding:12px 0}#emailForm small{max-width:320px}.cert-controls .lead{margin:.4em 0}
-@media print{.cert-controls{display:none!important}.cert:not(.show){display:none!important}}
+[hidden]{display:none!important}
+#setup{display:grid;gap:12px}#setup label{font-size:.95rem;color:var(--ink)}#setup input{width:min(100%,380px)}
+#setupError{color:#8d2424;font-weight:bold;margin:0}#setupError:empty{display:none}.setup-note{margin:0}
+#cert{max-width:960px;padding:clamp(12px,3vw,28px);border:1px solid var(--line)}
+#certificateImage{width:100%;height:auto;display:block;border-radius:8px}#certificatePreview{display:block}
+.cert-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px}
+.cert-controls a{display:inline-block;border-radius:8px;padding:9px 11px;font-weight:bold;text-decoration:none}
+:focus-visible{outline:3px solid #2b6dac;outline-offset:3px}
+@media print{.cert-controls,#cert h2,#result,#saveHint{display:none!important}.cert:not(.show){display:none!important}#cert{border:0;padding:0;margin:0}}
 </style></head><body><header><div class="kicker">TECHQUITY / COMPUTER SCIENCE / LET’S CHECK OUR LEARNING</div><h1>Sorting Algorithms — Let's Check Our Learning</h1>
 <div class="lead">Practise for as long as you need. When you are confident, sit the 20-question test: 10 sorting challenges and 10 knowledge questions.</div></header><main>
-<div id="setup" class="panel controls"><button id="startTest" class="primary" type="button">Start test</button><button id="start" type="button">Practise first</button></div>
+<form id="setup" class="panel">
+<label for="studentName">Name for your certificate
+<input id="studentName" type="text" autocomplete="name" maxlength="90" required aria-describedby="setupError" placeholder="Enter the name you use at school">
+</label>
+<label for="email">Email address
+<input id="email" type="email" autocomplete="off" maxlength="254" required aria-describedby="emailNote">
+</label>
+<p id="emailNote" class="lead setup-note">Your email is cleared when you start. It is not saved, sent or shown on the certificate.</p>
+<p id="setupError" role="alert"></p>
+<div class="controls"><button id="startTest" class="primary" type="submit">Start test</button><button id="start" type="submit">Practise first</button></div>
+</form>
 <div id="practiceIntro" class="panel" style="display:none"><b>Practice mode:</b> Complete as many rounds as you need. Practice does not affect your test result.</div>
 <div id="practiceActions" class="panel controls" style="display:none"><b>Practice rounds completed: <span id="practiceCount">0</span></b><button id="practiceNext">Another Practice Round</button><button id="beginTest" class="primary">I'm Ready — Start 20-Question Test</button></div>
 <div id="test" style="display:none"><div class="panel"><div class="progress"><div id="bar"></div></div><h2 id="title"></h2><div id="rule" class="rule"></div><div id="stage"></div><div id="msg" class="msg"></div><div class="stats"><div class="stat"><b id="q">Practice</b><small>Question</small></div><div class="stat"><b id="c">0</b><small>Comparisons / scans</small></div><div class="stat"><b id="s">0</b><small>Swaps</small></div><div class="stat"><b id="err">0</b><small>Test mistakes</small></div></div></div></div>
 <div id="mcq" style="display:none"><div class="panel"><div class="progress"><div id="mbar"></div></div><div class="stat"><b id="mq">1/20</b><small>Question</small></div><h2 id="mctitle"></h2><div class="rule">KNOWLEDGE CHECK</div><h2 id="mcqtext"></h2><div id="mcqanswers" class="mcqanswers"></div><div id="mcqmsg" class="msg"></div></div></div>
-<div id="cert" class="cert">
-<div class="kicker">TECHQUITY / COMPUTER SCIENCE</div><h1>Certificate of Completion</h1>
-<p id="certNameLine" hidden>Awarded to <strong id="cn"></strong></p>
-<p>Completed the 20-question Sorting Algorithms Test.</p><p id="result"></p><p id="date"></p>
+<section id="cert" class="cert" aria-labelledby="resultTitle">
+<h2 id="resultTitle" tabindex="-1">Test complete</h2><p id="result"></p>
+<a id="certificatePreview" download="Sorting-Algorithms-Certificate.png"><img id="certificateImage" width="1200" height="760" alt="Sorting Algorithms certificate"></a>
+<p id="saveHint" class="lead">Click the certificate or use <strong>Download certificate</strong>. You can also right-click the image and choose <strong>Save image as</strong>.</p>
+<p id="certificateError" role="status" hidden>The image could not be generated. Your score is shown above.</p>
 <div class="cert-controls">
-<label for="studentName">Name for your certificate (optional)</label>
-<input id="studentName" autocomplete="name" maxlength="100">
-<form id="emailForm" method="post" target="_blank" rel="noopener" hidden>
-<label for="email">Your school email address</label>
-<input id="email" name="email" type="email" autocomplete="email" maxlength="254" required>
-<input name="studentName" id="postedName" type="hidden">
-<input name="sortingScore" id="postedSort" type="hidden">
-<input name="knowledgeScore" id="postedKnowledge" type="hidden">
-<button class="primary" type="submit">Email my certificate</button>
-<small>Check the new tab to see whether your certificate was sent.</small>
-</form>
-<p id="emailUnavailable" class="lead" hidden>Email delivery is not set up yet. You can still print or save your certificate as a PDF.</p>
-<button type="button" id="printCert">Print / Save PDF</button>
+<a id="downloadCert" class="primary" download="Sorting-Algorithms-Certificate.png">Download certificate (PNG)</a>
 <button type="button" id="retake">Retake test</button>
-</div></div></main>
-<script src="certificate-mail-config.js"></script><script>
-const EMAIL_ENDPOINT=typeof CERTIFICATE_MAIL_URL==="string"&&/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(CERTIFICATE_MAIL_URL)?CERTIFICATE_MAIL_URL:"";
+</div></section></main>
+<script>
+(()=>{
 const $=id=>document.getElementById(id);
 const midIndex=n=>Math.floor((n-1)/2);
 const pivotIndexFor=(arr,rule)=>rule==="first"?0:rule==="last"?arr.length-1:midIndex(arr.length);
@@ -206,14 +212,23 @@ function dropZone(zone,el){
  else if(t().alg==="selection")selZone(zone,el);else qZone(zone,el);drag=null
 }
 function finish(){
+ if(mode!=="test" || ai<assessment.length || !certificateName)return;
  mode="finished";$("test").style.display="none";$("mcq").style.display="none";$("cert").classList.add("show");
- const total=sortCorrect+mcqCorrect,pct=Math.round(total/20*100);
- updateCertificateName();
- $("emailForm").hidden=!EMAIL_ENDPOINT;
- $("emailUnavailable").hidden=Boolean(EMAIL_ENDPOINT);
- if(EMAIL_ENDPOINT)$("emailForm").action=EMAIL_ENDPOINT;
+ const total=sortCorrect+mcqCorrect,pct=total*5;
  $("result").innerHTML=`<b>${total}/20 (${pct}%)</b><br>${sortCorrect}/10 sorting challenges completed without a mistake<br>${mcqCorrect}/10 knowledge questions correct<br>${E} sorting mistakes during the test`;
- $("date").textContent=new Date().toLocaleDateString();
+ try{
+  const png=makeCertificate(certificateName,sortCorrect,mcqCorrect);
+  $("certificateImage").alt=`Sorting Algorithms certificate for ${certificateName}: ${total} out of 20 (${pct}%).`;
+  $("certificateImage").src=png;
+  $("certificatePreview").href=png;
+  $("downloadCert").href=png;
+ }catch{
+  $("certificateError").hidden=false;
+  $("certificatePreview").hidden=true;
+  $("downloadCert").hidden=true;
+  $("saveHint").hidden=true;
+ }
+ $("resultTitle").focus();
 }
 const MCQS=[
  {q:"What is a pivot in Quick Sort?",a:["A reference value used to divide cards into groups","The smallest value in the list","The final card after sorting","The number of swaps"],c:0},
@@ -238,10 +253,16 @@ function randomPractice(){
  $("practiceActions").style.display="none";startChallenge();
 }
 function beginPractice(){
+ if(!certificateName)return;
  mode="practice";practiceCount=0;E=0;$("setup").style.display="none";$("test").style.display="block";$("practiceIntro").style.display="block";randomPractice();
 }
 function beginTest(){
- $("setup").style.display="none";$("email").value="";$("studentName").value="";
+ if(!certificateName)return;
+ clearTimeout(advanceTimer);
+ $("setup").style.display="none";
+ $("certificateImage").removeAttribute("src");
+ for(const id of ["certificatePreview","downloadCert"]){$(id).removeAttribute("href");$(id).hidden=false;}
+ $("certificateError").hidden=true;$("saveHint").hidden=false;
  mode="test";E=0;sortCorrect=0;mcqCorrect=0;ai=0;assessment=makeAssessment();
  $("practiceIntro").style.display="none";$("practiceActions").style.display="none";$("cert").classList.remove("show");showAssessmentItem();
 }
@@ -260,23 +281,93 @@ function answerMCQ(choice,button){
  else{button.classList.add("wronganswer");document.querySelectorAll(".answer")[correct].classList.add("correct");$("mcqmsg").textContent=`Correct answer: ${item.mcq.a[correct]}`}
  setTimeout(()=>{ai++;showAssessmentItem()},900);
 }
-function updateCertificateName(){
- const n=$("studentName").value.trim();
- $("cn").textContent=n;
- $("certNameLine").hidden=!n;
- return n;
+
+let certificateName="";
+const blockedWords=new Set([
+ "ass","asshole","bastard","bitch","bollocks","boner","bullshit","chode","cock","crap",
+ "cunt","dildo","douche","dumbass","fag","faggot","fuck","fucker","fucking","hitler",
+ "jizz","kike","motherfucker","nazi","nigga","nigger","penis","piss","poo","poop",
+ "porn","pussy","retard","retarded","sex","shit","shitty","slut","spastic","tits",
+ "twat","vagina","wank","wanker","whore","anus","test","anonymous","admin","administrator"
+]);
+const blockedPhrases=new Set([
+ "bendover","mikehunt","mikehawke","mikehawk","hughejass","hughjass","seymourbutts",
+ "anitabath","dixonbutts","deeznuts","ligmaballs","sugmadick",
+ "johndoe","janedoe","teststudent","noname","yourname",
+ "fuckyou","gofuckyourself","fuckoff","fuckyourmother","fuckboy"
+]);
+const obviousTerms=/^(?:fuck|cunt|nigg(?:er|a)|faggot|whore|dildo|asshole|bullshit|pussy|wanker)$/;
+const confusable={"а":"a","е":"e","і":"i","о":"o","р":"p","с":"c","ѕ":"s","х":"x","у":"y","к":"k","һ":"h","ο":"o","α":"a","ι":"i","κ":"k","τ":"t","ı":"i","ß":"ss"};
+function checkedName(input){
+ const cleaned=input.normalize("NFKC").trim().replace(/ +/g," ");
+ // Unicode names, macrons, apostrophes, hyphens and middle dots are supported.
+ if(!cleaned || [...cleaned].length>80 ||
+    !/^\p{L}[\p{L}\p{M}]*(?:[ '\u2019\u02bb\u02bc\u2010\u2011·-]\p{L}[\p{L}\p{M}]*)*$/u.test(cleaned))return "";
+ if(!/[^\p{Script=Latin}\p{M} '\u2019\u02bb\u02bc\u2010\u2011·-]/u.test(cleaned) &&
+    [...cleaned.matchAll(/\p{L}/gu)].length<2)return "";
+ const folded=cleaned.toLowerCase().normalize("NFKD").replace(/\p{M}/gu,"")
+  .replace(/[аеиіорсѕхуκктһοαιτıß]/gu,ch=>confusable[ch]||ch);
+ const words=folded.split(/[^\p{L}]+/u).filter(Boolean);
+ const compact=words.join("");
+ const splitOffence=words.some((_,i)=>words.slice(i,i+8).some((_,j)=>{
+  const piece=words.slice(i,i+j+1).join("");
+  return obviousTerms.test(piece)||obviousTerms.test(piece.replace(/(.)\1+/gu,"$1"));
+ }));
+ if(words.some(word=>blockedWords.has(word))||blockedPhrases.has(compact)||splitOffence||
+    /^(.)\1{3,}$/u.test(compact)||words.length>12)return "";
+ return cleaned;
 }
-$("start").onclick=beginPractice;
-$("startTest").onclick=beginTest;
+function makeCertificate(name,sorting,knowledge){
+ const c=document.createElement("canvas");
+ c.width=1200;c.height=760;
+ const g=c.getContext("2d");
+ if(!g)throw Error("Canvas unavailable");
+ const purple="#5a108f",ink="#24152c",muted="#604d69";
+ g.fillStyle="#f5eff9";g.fillRect(0,0,c.width,c.height);
+ g.fillStyle="#fff";g.fillRect(29,29,1142,702);
+ g.strokeStyle=purple;g.lineWidth=3;g.strokeRect(30,30,1140,700);
+ g.strokeStyle="#d8b9e8";g.lineWidth=1;g.strokeRect(42,42,1116,676);
+ g.fillStyle=purple;g.fillRect(48,48,1104,10);
+ g.textAlign="center";g.textBaseline="middle";
+ const line=(value,y,size,color=ink,weight=400,max=1010)=>{
+  g.font=`${weight} ${size}px Arial, sans-serif`;
+  const width=g.measureText(value).width;
+  if(width>max)g.font=`${weight} ${Math.floor(size*max/width)}px Arial, sans-serif`;
+  g.fillStyle=color;g.fillText(value,600,y,max);
+ };
+ line("TECHQUITY  /  COMPUTER SCIENCE",106,21,purple,700);
+ line("Certificate of Completion",176,55,purple,700);
+ line("Awarded to",243,24,muted);
+ line(name,304,58,ink,700);
+ line("for completing the 20-question Sorting Algorithms Test",365,24,muted);
+ g.fillStyle="#f5eff9";g.fillRect(185,416,830,161);
+ const total=sorting+knowledge;
+ line(`${total} / 20   ·   ${total*5}%`,464,56,purple,700);
+ line(`Sorting challenges: ${sorting}/10     •     Knowledge questions: ${knowledge}/10`,530,24,ink,400);
+ const date=new Intl.DateTimeFormat("en-NZ",{dateStyle:"long",timeZone:"Pacific/Auckland"}).format(new Date());
+ line(date,639,22,muted);
+ const png=c.toDataURL("image/png");
+ if(!png.startsWith("data:image/png," )&&!png.startsWith("data:image/png;base64,"))throw Error("PNG unavailable");
+ return png;
+}
+$("setup").addEventListener("submit",event=>{
+ event.preventDefault();
+ if(mode!=="setup")return;
+ const field=$("studentName");
+ const checked=checkedName(field.value);
+ if(!checked){
+  $("setupError").textContent="Enter the name you use at school. Use letters, spaces, apostrophes or hyphens.";
+  field.setAttribute("aria-invalid","true");field.focus();return;
+ }
+ certificateName=checked;
+ field.value="";$("email").value="";
+ if(event.submitter?.id==="start")beginPractice();else beginTest();
+});
+$("studentName").addEventListener("input",()=>{
+ $("studentName").removeAttribute("aria-invalid");$("setupError").textContent="";
+});
 $("practiceNext").onclick=randomPractice;
 $("beginTest").onclick=beginTest;
 $("retake").onclick=beginTest;
-$("studentName").addEventListener("input",updateCertificateName);
-$("printCert").onclick=()=>{if(mode==="finished"){updateCertificateName();window.print();}};
-$("emailForm").addEventListener("submit",event=>{
- if(!EMAIL_ENDPOINT||mode!=="finished"){event.preventDefault();return;}
- $("postedName").value=updateCertificateName();
- $("postedSort").value=String(sortCorrect);
- $("postedKnowledge").value=String(mcqCorrect);
-});
+})();
 </script></body></html>
