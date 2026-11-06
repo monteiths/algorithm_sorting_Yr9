@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quicksort · You Learn</title>
+<style>:root{--purple:#651394;--purple2:#8a35b4;--ink:#262331;--muted:#6e6a75;--paper:#fbfafc;--line:#ddd7e2;--yellow:#fff1b8;--yellowLine:#c69210;--green:#dff5e9;--greenLine:#23855f;--pink:#f0ddf8;--bad:#fde2e2;--badLine:#c73535}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header,main{max-width:1080px;margin:auto;padding:18px}header{padding-bottom:7px}
+.kicker{font-weight:900;color:var(--purple);letter-spacing:.04em;font-size:.82rem}
+h1{color:var(--purple);font-size:clamp(1.7rem,4vw,2.65rem);margin:.3rem 0}.lead{color:var(--muted);line-height:1.5}
+.rule{background:var(--purple);color:white;padding:18px;border-radius:10px;font-weight:900;letter-spacing:.03em;margin:14px 0}
+.panel{background:white;border:1px solid #eee9f1;border-radius:13px;padding:16px;margin:12px 0;box-shadow:0 5px 20px rgba(52,35,66,.06)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end}label{display:grid;gap:5px;font-size:.76rem;font-weight:900;color:var(--muted)}
+select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:white}button{cursor:pointer;font-weight:800}
+.primary{background:var(--purple);color:white;border-color:var(--purple)}button:disabled{opacity:.45;cursor:not-allowed}
+.cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:130px;padding:18px 4px 34px}
+.card{width:74px;height:96px;border:2px solid #aaa5ae;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:2.15rem;font-weight:900;position:relative;user-select:none}
+.card.active{background:var(--yellow);border-color:var(--yellowLine);color:#8b6500}.card.finished{background:var(--green);border-color:var(--greenLine);color:#116444}
+.card.pivot{background:var(--pink);border-color:var(--purple);color:var(--purple)}.card.bad{background:var(--bad);border-color:var(--badLine)}
+.card[draggable=true]{cursor:grab}.tag{position:absolute;bottom:-24px;font-size:.63rem;color:var(--muted);font-weight:900;white-space:nowrap}
+.msg{padding:13px 15px;border-left:5px solid var(--purple);background:#f5eef9;border-radius:8px;line-height:1.45;font-weight:700;min-height:50px}
+.msg.good{background:#edf9f2;border-color:var(--greenLine);color:#155d43}.msg.bad{background:#fff0f0;border-color:var(--badLine);color:#8d2424}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.stat{text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px}.stat b{display:block;font-size:1.25rem}.stat small{color:var(--muted);font-weight:800}
+.bins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.bin{min-height:125px;border:2px dashed var(--line);border-radius:10px;padding:10px;text-align:center}.bin h3{margin:0 0 8px;color:var(--purple);font-size:.86rem}.bin .cards{min-height:70px;padding:4px}
+.stepbox{background:#faf7fc;border-radius:10px;padding:13px;margin:8px 0}.stepbox b{color:var(--purple)}
+.cert{display:none;text-align:center;border:6px double var(--purple);padding:32px;background:white}.cert.show{display:block}
+.progress{height:9px;background:#e8e3eb;border-radius:99px;overflow:hidden}.progress div{height:100%;background:var(--purple)}
+@media(max-width:650px){.card{width:58px;height:78px;font-size:1.65rem}.bins{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media print{body>*:not(main),main>*:not(.cert){display:none!important}.cert{display:block!important}}
+
+.dropzone{border:3px dashed #bbb;border-radius:14px;min-height:76px;padding:14px;margin-top:14px;text-align:center;font-weight:800;display:flex;align-items:center;justify-content:center}
+.dropzone.over{border-color:#5a2ca0;background:#f2ebff}
+.dropzone.wrong,.card.wrong{background:#ffd9d9!important;border-color:#c62828!important;animation:shake .25s linear 2}
+.msg.bad{background:#ffe3e3;border-left:6px solid #c62828}
+.msg.good{background:#e6f4e8;border-left:6px solid #2e7d32}
+.card[draggable=true]{cursor:grab}.card[draggable=true]:active{cursor:grabbing}
+.card.dim{opacity:.42}
+.actionrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.bin{min-height:150px}
+.bin.dropzone{display:block;text-align:left}
+.bin h3{text-align:center}
+.tag{display:block;font-size:10px;line-height:1.1;margin-top:5px;font-weight:800}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+
+/* Card exchange: two cards visibly cross paths rather than teleport. */
+.card.swap-moving{z-index:3;transition:transform 750ms cubic-bezier(.25,.7,.25,1);will-change:transform}
+.card.swap-moving.swap-over{z-index:4}
+@media(prefers-reduced-motion:reduce){.card.swap-moving{transition-duration:0ms}}
+
+.selection-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.selection-choice{border:3px dashed #b8a4c7;border-radius:13px;padding:12px;min-height:105px;background:#fbf8fd;text-align:center}.selection-choice strong{display:block;color:var(--purple);font-size:.91rem}.selection-choice .choice-value{font-size:1.9rem;font-weight:900;margin:6px auto}.selection-choice.chosen{border-color:var(--greenLine);background:#eaf8ef}.selection-choice.chosen strong{color:#116444}.selection-choice small{display:block;color:var(--muted)}@media(max-width:550px){.selection-choices{grid-template-columns:1fr}}
+.quick-page .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+:focus-visible{outline:3px solid #2b6dac;outline-offset:3px}
+@media(max-width:430px){header,main,.panel{padding:10px}.cards{gap:4px}.card{width:clamp(36px,13vw,53px);height:64px}.tag{font-size:8px;white-space:normal;text-align:center}.actionrow{gap:6px}.dropzone{padding:8px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="kicker">TECHQUITY / COMPUTER SCIENCE / YOU LEARN</div>
+ <h1>Quicksort</h1>
+ <div class="lead">Use the same <b>3, 5, 2, 3, 1</b> cards and the same routines as Watch &amp; Learn. Drag the cards to make each decision.</div>
+</header>
+<main class="quick-page">
+ <div class="panel controls">
+  <label id="pivotWrap">Pivot rule<select id="pivot"><option value="first">First card</option><option value="last">Last card</option><option value="middle">Middle position</option></select></label>
+  <button id="reset">Reset</button><button id="hint">Hint</button>
+ </div>
+ <div id="rule" class="rule"></div>
+ <div class="panel">
+  <div id="stage"></div>
+  <div id="msg" class="msg" role="status" aria-atomic="true"></div>
+  <div class="stats">
+   <div class="stat"><b id="c">0</b><small>Cards classified</small></div>
+   <div hidden><b id="s">0</b></div>
+   <div class="stat"><b id="err">0</b><small>Mistakes</small></div>
+   <div class="stat"><b id="st">Ready</b><small>Status</small></div>
+  </div>
+ </div>
+</main>
+<script>
+const START=[3,5,2,3,1];
+const $=id=>document.getElementById(id);
+const midIndex=n=>Math.floor((n-1)/2);
+const pivotIndexFor=(arr,rule)=>rule==="first"?0:rule==="last"?arr.length-1:midIndex(arr.length);
+
+const alg="quick";
+let a=[], errors=0, C=0, S=0, drag=null;
+let bPass=1,bI=0,bEnd=4;
+let selPos=0,selJ=1,selMin=0,selPhase="start";
+let q=null;
+
+function card(v,i,cls="",tag=""){
+ return `<div class="card ${cls}" draggable="true" data-i="${i}">${v}${tag?`<span class="tag">${tag}</span>`:""}</div>`;
+}
+function placedCard(v,cls=""){
+ return `<div class="card ${cls}" draggable="false">${v}</div>`;
+}
+function setMsg(t,type=""){
+ $("msg").className="msg"+(type?" "+type:""); $("msg").textContent=t;
+}
+function flashWrong(el,text){
+ errors++; $("err").textContent=errors; setMsg("Mistake — "+text,"bad");
+ if(el){el.classList.add("wrong");setTimeout(()=>el.classList.remove("wrong"),550)}
+}
+function finish(arr,label){
+ $("stage").innerHTML=`<div class="cards">${arr.map(v=>placedCard(v,"finished")).join("")}</div>`;
+ $("st").textContent="Complete"; $("hint").disabled=true; setMsg(`${label} complete: ${arr.join(", ")}. All cards are finished.`,"good");
+ bind();
+}
+function reset(){
+ a=[...START];$("hint").disabled=false;errors=C=S=0;drag=null;
+ bPass=1;bI=0;bEnd=4;
+ selPos=0;selJ=1;selMin=0;selPhase="start";
+ q=null;
+ $("err").textContent=0;$("c").textContent=0;$("s").textContent=0;$("st").textContent="Working";
+ render();
+}
+function bind(){
+ document.querySelectorAll(".card[draggable=true]").forEach(el=>{
+   el.ondragstart=e=>{drag=+el.dataset.i;e.dataTransfer.setData("text/plain",String(drag))};
+   el.ondragend=()=>drag=null;
+   el.ondragover=e=>e.preventDefault();
+   el.ondrop=e=>{e.preventDefault();if(drag!==null && +el.dataset.i!==drag) dropOnCard(+el.dataset.i,el)};
+ });
+ document.querySelectorAll(".dropzone").forEach(z=>{
+   z.ondragover=e=>{e.preventDefault();z.classList.add("over")};
+   z.ondragleave=()=>z.classList.remove("over");
+   z.ondrop=e=>{e.preventDefault();e.stopPropagation();z.classList.remove("over");dropOnZone(z.dataset.zone,z)};
+ });
+}
+
+// Animate a genuine exchange from the previous card positions to the new positions.
+// Call after the new cards have been rendered; no algorithm counts are affected.
+function animateCardExchange(left,right,before){
+ const cards=[...document.querySelectorAll("#stage > .cards > .card")];
+ if(!cards[left]||!cards[right]||!before)return;
+ const L=cards[left],R=cards[right],lr=L.getBoundingClientRect(),rr=R.getBoundingClientRect();
+ // The final values have already been rendered. Hide them while two temporary
+ // cards with the ORIGINAL values visibly travel along opposite sweeping arcs.
+ L.style.visibility="hidden";R.style.visibility="hidden";
+ const overlay=document.createElement("div");
+ overlay.setAttribute("aria-hidden","true");
+ overlay.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:visible";
+ document.body.appendChild(overlay);
+ const duration=1850,dx=rr.left-lr.left,dy=rr.top-lr.top;
+ const create=(value,rect)=>{
+   const node=L.cloneNode(false);
+   node.textContent=value;
+   node.className="card active";
+   node.style.cssText=`position:absolute;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;box-sizing:border-box;display:grid;place-items:center;transform-origin:center;box-shadow:0 8px 18px rgba(45,20,65,.2)`;
+   overlay.appendChild(node);return node;
+ };
+ const leftCard=create(before[left],lr),rightCard=create(before[right],rr);
+ const easing="cubic-bezier(.45,0,.55,1)";
+ const arc=Math.max(87.5,Math.min(117.5,window.innerHeight*.125));
+ const up=leftCard.animate([
+  {transform:"translate(0px,0px) scale(1)",offset:0},
+  {transform:`translate(${dx*.22}px,${-arc*.8}px) rotate(-7deg) scale(1.17)`,offset:.25},
+  {transform:`translate(${dx*.5}px,${-arc}px) rotate(0deg) scale(1.24)`,offset:.5},
+  {transform:`translate(${dx*.78}px,${-arc*.8}px) rotate(7deg) scale(1.17)`,offset:.75},
+  {transform:`translate(${dx}px,${dy}px) scale(1)`,offset:1}
+ ],{duration,easing,fill:"forwards"});
+ const down=rightCard.animate([
+  {transform:"translate(0px,0px) scale(1)",offset:0},
+  {transform:`translate(${-dx*.22}px,${arc*.8}px) rotate(7deg) scale(1.17)`,offset:.25},
+  {transform:`translate(${-dx*.5}px,${arc}px) rotate(0deg) scale(1.24)`,offset:.5},
+  {transform:`translate(${-dx*.78}px,${arc*.8}px) rotate(-7deg) scale(1.17)`,offset:.75},
+  {transform:`translate(${-dx}px,${-dy}px) scale(1)`,offset:1}
+ ],{duration,easing,fill:"forwards"});
+ Promise.all([up.finished.catch(()=>{}),down.finished.catch(()=>{})]).then(()=>{
+  overlay.remove();L.style.visibility="";R.style.visibility="";
+ });
+}
+
+function render(){
+ $("c").textContent=C;$("s").textContent=S;$("err").textContent=errors;
+ if(alg==="bubble")renderBubble();
+ else if(alg==="selection")renderSelection();
+ else renderQuick();
+ bind();
+}
+
+// ---------- BUBBLE ----------
+function renderBubble(){
+ $("rule").textContent="COMPARE NEIGHBOURS → SWAP IF NEEDED → MOVE RIGHT";
+ if(bEnd===0) return finish(a,"Bubble Sort");
+ const i=bI,j=i+1,need=a[i]>a[j];
+ $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===i||k===j?"active":k>bEnd?"finished":"",k===i?"LEFT":k===j?"RIGHT":"")).join("")}</div>
+ <div class="dropzone" data-zone="keep">DROP A HIGHLIGHTED CARD HERE TO KEEP / NO SWAP</div>`;
+ setMsg(`${bI===0&&bPass>1?`Pass ${bPass}: the ${bPass-1} green card(s) at the right are already in their final positions, because each previous pass moved the largest remaining card to the end. We compare only the unsorted section. `:""}Compare ${a[i]} and ${a[j]}. ${need?"If they are out of order, drag one highlighted card onto the other.":"If they are already in order, drag either highlighted card to KEEP / NO SWAP."}`);
+}
+function advanceBubble(){
+ C++;bI++;
+ if(bI>=bEnd){bEnd--;bPass++;bI=0}
+ render();
+}
+function bubbleSwap(i,j,target){
+ if(!((i===bI&&j===bI+1)||(j===bI&&i===bI+1))) return flashWrong(target,"Bubble Sort can only move the two highlighted neighbours.");
+ if(a[bI]<=a[bI+1]) return flashWrong(target,"these cards are already in order. Use KEEP / NO SWAP.");
+ const swapAt=bI,before=[...a];[a[bI],a[bI+1]]=[a[bI+1],a[bI]];S++;advanceBubble();animateCardExchange(swapAt,swapAt+1,before);
+}
+
+// ---------- SELECTION ----------
+function renderSelection(){
+ $("rule").textContent="MARK MINIMUM → SCAN REMAINING VALUES → SWAP ONCE";
+ if(selPos>=a.length-1) return finish(a,"Selection Sort");
+ if(selPhase==="start"){
+   $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===selPos?"active":k<selPos?"finished":"",k===selPos?"STARTING MINIMUM":"")).join("")}</div>
+   <div class="dropzone" data-zone="markmin">DRAG THE FIRST UNSORTED CARD HERE TO MARK IT AS THE STARTING MINIMUM</div>`;
+   setMsg(`Round ${selPos+1}: mark ${a[selPos]} as the starting minimum. This does not count as a scan.`);
+   return;
+ }
+ if(selPhase==="scan"){
+   if(selJ>=a.length){selPhase="swap";return renderSelection()}
+   $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===selMin||k===selJ?"active":k<selPos?"finished":"",k===selMin?"MINIMUM":k===selJ?"CANDIDATE":"")).join("")}</div>
+   <div class="actionrow">
+    <div class="dropzone selection-choice" data-zone="keepmin"><strong>KEEP CURRENT MINIMUM</strong><div class="choice-value">${a[selMin]}</div><small>Candidate ${a[selJ]} is not smaller</small></div>
+    <div class="dropzone selection-choice" data-zone="newmin"><strong>MAKE CANDIDATE THE NEW MINIMUM</strong><div class="choice-value">${a[selJ]}</div><small>Candidate ${a[selJ]} is smaller</small></div>
+   </div>`;
+   setMsg(`Round ${selPos+1}: scan candidate ${a[selJ]} against current minimum ${a[selMin]}. Drag the CANDIDATE to the correct decision box.`);
+   return;
+ }
+ // swap phase
+ $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===selPos||k===selMin?"active":k<selPos?"finished":"",k===selPos?"FIRST UNSORTED":k===selMin?"MINIMUM":"")).join("")}</div>`;
+ if(selMin===selPos){
+   $("stage").innerHTML+=`<div class="dropzone" data-zone="noselswap">DROP THE MINIMUM HERE — NO SWAP NEEDED</div>`;
+   setMsg(`Round ${selPos+1} scan complete. The minimum is already in the first unsorted position, so no swap is needed.`);
+ } else {
+   setMsg(`Round ${selPos+1} scan complete. Drag the MINIMUM card onto the FIRST UNSORTED card to make the one swap.`);
+ }
+}
+function nextSelectionRound(){
+ selPos++;selMin=selPos;selJ=selPos+1;selPhase="start";render();
+}
+function selectionZone(zone,el){
+ if(selPhase==="start"){
+   if(zone!=="markmin" || drag!==selPos) return flashWrong(el,"mark the first unsorted card as the starting minimum.");
+   selMin=selPos;selJ=selPos+1;selPhase="scan";setMsg("Correct — starting minimum marked.","good");return render();
+ }
+ if(selPhase==="scan"){
+   if(drag!==selJ) return flashWrong(el,"move the CANDIDATE card, not another card.");
+   const smaller=a[selJ]<a[selMin];
+   if(smaller && zone!=="newmin") return flashWrong(el,`${a[selJ]} is smaller, so it must become the new minimum.`);
+   if(!smaller && zone!=="keepmin") return flashWrong(el,`${a[selJ]} is not smaller, so keep the current minimum.`);
+   C++; if(smaller)selMin=selJ; selJ++;
+   setMsg("Correct — continue scanning left to right.","good");return render();
+ }
+ if(selPhase==="swap" && zone==="noselswap"){
+   if(drag!==selMin || selMin!==selPos) return flashWrong(el,"no-swap is only correct when the minimum is already first.");
+   return nextSelectionRound();
+ }
+ flashWrong(el,"that move is not valid at this stage.");
+}
+function selectionSwap(i,j,target){
+ if(selPhase!=="swap") return flashWrong(target,"finish the full scan before swapping.");
+ if(selMin===selPos) return flashWrong(target,"the minimum is already first; no swap is needed.");
+ if(!((i===selMin&&j===selPos)||(j===selMin&&i===selPos))) return flashWrong(target,"swap only the MINIMUM with the FIRST UNSORTED card.");
+ const left=selPos,right=selMin,before=[...a];[a[selPos],a[selMin]]=[a[selMin],a[selPos]];S++;nextSelectionRound();animateCardExchange(left,right,before);
+}
+
+// ---------- QUICK ----------
+function newQGroup(arr){
+ if(arr.length<=1)return null;
+ const pi=pivotIndexFor(arr,$("pivot").value);
+ return {arr:[...arr],pivotIndex:pi,pivot:arr[pi],at:pi,phase:"placePivot",less:[],equal:[],greater:[]};
+}
+function initQuick(){
+ if(q)return;
+ q={stack:[[...START]],current:null,scans:0,parts:0,completed:[]};
+}
+function getNextQGroup(){
+ while(!q.current && q.stack.length){
+   const arr=q.stack.shift();
+   if(arr.length<=1){q.completed.push(arr);continue}
+   q.current=newQGroup(arr);q.parts++;
+ }
+}
+function nextUnclassifiedIndex(g,start=0){
+ for(let i=start;i<g.arr.length;i++){
+   if(i!==g.pivotIndex)return i;
+ }
+ return g.arr.length;
+}
+function renderQuick(){
+ $("rule").textContent="CHOOSE PIVOT → PLACE PIVOT IN EQUAL → PARTITION LEFT TO RIGHT → SORT OUTER GROUPS → JOIN";
+ initQuick();getNextQGroup();
+ if(!q.current){
+   const sorted=[...START].sort((x,y)=>x-y);C=q.scans;$("c").textContent=C;return finish(sorted,"Quick Sort");
+ }
+ const g=q.current,pv=g.pivot;
+ const main=g.arr.map((v,i)=>{
+   let cls=i===g.pivotIndex?"pivot":"";
+   if(i===g.at)cls+=(cls?" ":"")+"active";
+   if(g.phase==="classify" && (i<g.at || i===g.pivotIndex))cls+=(cls?" ":"")+"dim";
+   return card(v,i,cls,i===g.pivotIndex?"PIVOT":i===g.at?"NEXT":"");
+ }).join("");
+ $("stage").innerHTML=`<div class="cards">${main}</div>
+ <div class="bins">
+  <div class="bin dropzone" data-zone="less"><h3>LESS than ${pv}</h3><div class="cards">${g.less.map(v=>placedCard(v)).join("")}</div></div>
+  <div class="bin dropzone" data-zone="equal"><h3>EQUAL to ${pv} / PIVOT GROUP</h3><div class="cards">${g.equal.map(v=>placedCard(v,"pivot")).join("")}</div></div>
+  <div class="bin dropzone" data-zone="greater"><h3>GREATER than ${pv}</h3><div class="cards">${g.greater.map(v=>placedCard(v)).join("")}</div></div>
+ </div>`;
+ if(g.phase==="placePivot"){
+   setMsg(`Pivot ${pv}. First drag the pink PIVOT card into EQUAL / PIVOT GROUP. This establishes the pivot before scanning the other cards.`);
+ }else{
+   setMsg(`Pivot ${pv} is set. Now work left to right: drag NEXT (${g.arr[g.at]}) into LESS, EQUAL / PIVOT GROUP or GREATER.`);
+ }
+ C=q.scans;$("c").textContent=C;$("s").textContent=0;
+}
+function finishQuickGroup(g){
+ const children=[];
+ if(g.less.length>1)children.push([...g.less]);
+ if(g.greater.length>1)children.push([...g.greater]);
+ q.stack=children.concat(q.stack);q.current=null;
+ render();
+}
+function quickZone(zone,el){
+ const g=q.current;if(!g)return;
+
+ if(g.phase==="placePivot"){
+   if(drag!==g.pivotIndex)return flashWrong(el,"place the pink PIVOT card first.");
+   if(zone!=="equal")return flashWrong(el,`the pivot ${g.pivot} belongs in EQUAL / PIVOT GROUP.`);
+   g.equal.push(g.pivot);
+   q.scans++; C=q.scans; // teacher routine deals every card once, including pivot
+   g.phase="classify";
+   g.at=nextUnclassifiedIndex(g,0);
+   setMsg(`Correct — pivot ${g.pivot} is in EQUAL / PIVOT GROUP. Now scan the remaining cards from left to right.`,"good");
+   if(g.at>=g.arr.length)return finishQuickGroup(g);
+   return render();
+ }
+
+ if(drag!==g.at)return flashWrong(el,"Quick Sort must classify the NEXT card from left to right.");
+ const v=g.arr[g.at],correct=v<g.pivot?"less":v>g.pivot?"greater":"equal";
+ if(zone!==correct)return flashWrong(el,`${v} belongs in ${correct.toUpperCase()}.`);
+ g[correct].push(v);q.scans++;C=q.scans;
+ g.at=nextUnclassifiedIndex(g,g.at+1);
+ setMsg(`Correct — ${v} → ${correct.toUpperCase()}.`,"good");
+ if(g.at>=g.arr.length)return finishQuickGroup(g);
+ render();
+}
+function dropOnCard(j,target){
+ if(drag===null)return;
+ if(alg==="bubble")bubbleSwap(drag,j,target);
+ else if(alg==="selection")selectionSwap(drag,j,target);
+ else flashWrong(target,"Quick Sort cards go into LESS / EQUAL / GREATER, not onto another card.");
+ drag=null;
+}
+function dropOnZone(zone,el){
+ if(drag===null)return;
+ if(alg==="bubble"){
+   if(zone!=="keep")return flashWrong(el,"use the KEEP / NO SWAP box.");
+   if(!(drag===bI||drag===bI+1))return flashWrong(el,"move one of the highlighted cards.");
+   if(a[bI]>a[bI+1])return flashWrong(el,"these neighbours are out of order and must be swapped.");
+   advanceBubble();
+ } else if(alg==="selection") selectionZone(zone,el);
+ else quickZone(zone,el);
+ drag=null;
+}
+$("hint").onclick=()=>{
+ if(alg==="bubble") setMsg(a[bI]>a[bI+1]?"Hint: swap the two highlighted neighbours.":"Hint: drag either highlighted card to KEEP / NO SWAP.");
+ else if(alg==="selection"){
+   if(selPhase==="start")setMsg("Hint: drag the first unsorted card to MARK STARTING MINIMUM.");
+   else if(selPhase==="scan")setMsg(a[selJ]<a[selMin]?"Hint: drag the candidate to NEW MINIMUM.":"Hint: drag the candidate to KEEP CURRENT MINIMUM.");
+   else setMsg(selMin===selPos?"Hint: no swap is needed.":"Hint: drag the MINIMUM onto FIRST UNSORTED.");
+ } else {
+   const g=q?.current;if(g){
+     if(g.phase==="placePivot")setMsg(`Hint: drag the pink pivot ${g.pivot} to EQUAL / PIVOT GROUP first.`);
+     else {const v=g.arr[g.at],dest=v<g.pivot?"LESS":v>g.pivot?"GREATER":"EQUAL";setMsg(`Hint: drag ${v} to ${dest}.`)}
+   }
+ }
+};
+if ($("pivot")) $("pivot").onchange=reset;
+$("reset").onclick=reset;
+reset();
+</script>
+</body>
+</html>
