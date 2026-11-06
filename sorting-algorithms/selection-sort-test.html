@@ -1,0 +1,252 @@
+<!doctype html><html lang="en-NZ"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Selection Sort test · Techquity</title><style>:root{--purple:#651394;--purple2:#8a35b4;--ink:#262331;--muted:#6e6a75;--paper:#fbfafc;--line:#ddd7e2;--yellow:#fff1b8;--yellowLine:#c69210;--green:#dff5e9;--greenLine:#23855f;--pink:#f0ddf8;--bad:#fde2e2;--badLine:#c73535}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+header,main{max-width:1080px;margin:auto;padding:18px}header{padding-bottom:7px}
+.kicker{font-weight:900;color:var(--purple);letter-spacing:.04em;font-size:.82rem}
+h1{color:var(--purple);font-size:clamp(1.7rem,4vw,2.65rem);margin:.3rem 0}.lead{color:var(--muted);line-height:1.5}
+.rule{background:var(--purple);color:white;padding:18px;border-radius:10px;font-weight:900;letter-spacing:.03em;margin:14px 0}
+.panel{background:white;border:1px solid #eee9f1;border-radius:13px;padding:16px;margin:12px 0;box-shadow:0 5px 20px rgba(52,35,66,.06)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:end}label{display:grid;gap:5px;font-size:.76rem;font-weight:900;color:var(--muted)}
+select,input,button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:white}button{cursor:pointer;font-weight:800}
+.primary{background:var(--purple);color:white;border-color:var(--purple)}button:disabled{opacity:.45;cursor:not-allowed}
+.cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:130px;padding:18px 4px 34px}
+.card{width:74px;height:96px;border:2px solid #aaa5ae;border-radius:9px;background:#fff;display:grid;place-items:center;font-size:2.15rem;font-weight:900;position:relative;user-select:none}
+.card.active{background:var(--yellow);border-color:var(--yellowLine);color:#8b6500}.card.finished{background:var(--green);border-color:var(--greenLine);color:#116444}
+.card.pivot{background:var(--pink);border-color:var(--purple);color:var(--purple)}.card.bad{background:var(--bad);border-color:var(--badLine)}
+.card[draggable=true]{cursor:grab}.tag{position:absolute;bottom:-24px;font-size:.63rem;color:var(--muted);font-weight:900;white-space:nowrap}
+.msg{padding:13px 15px;border-left:5px solid var(--purple);background:#f5eef9;border-radius:8px;line-height:1.45;font-weight:700;min-height:50px}
+.msg.good{background:#edf9f2;border-color:var(--greenLine);color:#155d43}.msg.bad{background:#fff0f0;border-color:var(--badLine);color:#8d2424}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.stat{text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px}.stat b{display:block;font-size:1.25rem}.stat small{color:var(--muted);font-weight:800}
+.bins{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.bin{min-height:125px;border:2px dashed var(--line);border-radius:10px;padding:10px;text-align:center}.bin h3{margin:0 0 8px;color:var(--purple);font-size:.86rem}.bin .cards{min-height:70px;padding:4px}
+.stepbox{background:#faf7fc;border-radius:10px;padding:13px;margin:8px 0}.stepbox b{color:var(--purple)}
+.cert{display:none;text-align:center;border:6px double var(--purple);padding:32px;background:white}.cert.show{display:block}
+.progress{height:9px;background:#e8e3eb;border-radius:99px;overflow:hidden}.progress div{height:100%;background:var(--purple)}
+@media(max-width:650px){.card{width:58px;height:78px;font-size:1.65rem}.bins{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+
+.dropzone{border:3px dashed #bbb;border-radius:14px;min-height:76px;padding:14px;margin-top:14px;text-align:center;font-weight:800;display:flex;align-items:center;justify-content:center}
+.dropzone.over{border-color:#5a2ca0;background:#f2ebff}
+.dropzone.wrong,.card.wrong{background:#ffd9d9!important;border-color:#c62828!important;animation:shake .25s linear 2}
+.msg.bad{background:#ffe3e3;border-left:6px solid #c62828}
+.msg.good{background:#e6f4e8;border-left:6px solid #2e7d32}
+.card[draggable=true]{cursor:grab}.card[draggable=true]:active{cursor:grabbing}
+.card.dim{opacity:.42}
+.actionrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.bin{min-height:150px}
+.bin.dropzone{display:block;text-align:left}
+.bin h3{text-align:center}
+.tag{display:block;font-size:10px;line-height:1.1;margin-top:5px;font-weight:800}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.progress{height:14px;background:#eee;border-radius:999px;overflow:hidden;margin-bottom:18px}.progress>div{height:100%;background:#5a2ca0;width:0}
+.cert{display:none;max-width:820px;margin:30px auto;padding:42px;border:5px solid #5a2ca0;border-radius:18px;text-align:center;background:white}.cert.show{display:block}
+input{font:inherit;padding:10px;border:1px solid #bbb;border-radius:8px}
+.mcqanswers{display:grid;gap:12px;margin:18px 0}.answer{padding:16px;text-align:left;font-size:1rem;border:2px solid #ddd;border-radius:12px;background:white;cursor:pointer}.answer.correct{background:#e6f4e8;border-color:#2e7d32}.answer.wronganswer{background:#ffd9d9;border-color:#c62828}.cert #result{font-size:1.1rem;line-height:1.7}
+
+
+[hidden]{display:none!important}progress{width:100%;accent-color:var(--purple)}:focus-visible{outline:3px solid #2b6dac;outline-offset:3px}#result{font-size:2rem;color:var(--purple);font-weight:bold}#mcqmsg:empty{display:none}#mcqtext{font-size:1.15rem;font-weight:bold}.answer{min-height:44px}.answer:disabled{opacity:1}#next{min-height:44px}.quick-test .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:430px){header,main,.panel{padding:10px}.cards{gap:4px}.card{width:clamp(36px,13vw,53px);height:64px}.tag{font-size:8px;white-space:normal;text-align:center}.actionrow{gap:6px}.dropzone{padding:8px}}
+
+</style></head><body>
+<header><div class="kicker">TECHQUITY / COMPUTER SCIENCE / CHECK YOUR LEARNING</div><h1>Selection Sort test</h1>
+<div class="lead">10 questions: five card-sorting challenges and five multiple-choice questions. Earn one point for each sorting challenge completed without a mistake and one point for each correct answer.</div></header>
+<main>
+<progress id="progress" max="10" value="0" aria-label="Questions completed"></progress>
+<section id="test" class="panel"><h2 id="title" tabindex="-1"></h2><div id="rule" class="rule"></div><div id="stage"></div><div id="msg" class="msg" role="status"></div>
+<div class="stats"><div class="stat"><b id="q"></b><small>Question</small></div><div class="stat"><b id="c">0</b><small>Comparisons</small></div><div class="stat"><b id="s">0</b><small>Swaps</small></div><div class="stat"><b id="err">0</b><small>Sorting mistakes</small></div></div></section>
+<section id="mcq" class="panel" hidden><h2 id="mctitle" tabindex="-1"></h2><div class="rule">KNOWLEDGE CHECK</div><p id="mcqtext"></p><div id="mcqanswers" class="mcqanswers"></div><div id="mcqmsg" class="msg" role="status"></div></section>
+<button id="next" type="button" class="primary" hidden>Next question</button>
+<section id="resultPanel" class="panel" hidden><h2 id="resultTitle" tabindex="-1">Test complete</h2><p id="result"></p><p id="breakdown"></p><button id="retake" type="button">Try again</button></section>
+</main><script>
+const ALG="selection";
+const QUESTIONS=[["What does Selection Sort find before the round’s swap?", ["The pivot", "The minimum in the unsorted part", "The largest finished card", "Two equal cards"], 1], ["Does changing which card is marked as the minimum move the cards?", ["Yes, every time", "Only in round one", "Only if they are equal", "No, only the marker changes"], 3], ["In this activity, what happens if the candidate equals the current minimum?", ["Keep the current minimum", "Swap the two immediately", "Make the candidate the new minimum", "Stop the scan"], 0], ["After the first full scan of 3, 5, 2, 3, 1, which two values are swapped?", ["3 and 5", "5 and 2", "The first 3 and 1", "2 and 1"], 2], ["What happens if the smallest unsorted card is already at the start of the unsorted section?", ["Swap it with the last card", "Mark that position finished without a swap", "Restart the sort", "Scan the finished cards again"], 1]];
+
+const TOTAL=10;
+const $=id=>document.getElementById(id);
+const midIndex=n=>Math.floor((n-1)/2);
+const pivotIndexFor=(arr,rule)=>rule==="first"?0:rule==="last"?arr.length-1:midIndex(arr.length);
+let a=[], E=0, C=0, S=0, drag=null;
+let assessment=[],ai=0,mcqCorrect=0,sortCorrect=0,currentSortHadError=false,answered=false;
+let bPass=1,bI=0,bEnd=0,selPos=0,selJ=1,selMin=0,selPhase="start",qstate=null;
+const rnd=n=>Math.floor(Math.random()*n);
+function build(){
+ const seen=new Set(),sorts=[];
+ for(let i=0;i<5;i++){
+  let cards,key;
+  do {
+   cards=Array.from({length:3+rnd(3)},()=>1+rnd(9));
+   if(cards.every((v,j)=>!j||cards[j-1]<=v))cards.reverse();
+   key=cards.join(",");
+  }while(new Set(cards).size<2||seen.has(key));
+  seen.add(key);
+  sorts.push({kind:"sort",test:{cards,pivot:["first","last","middle"][i%3]}});
+ }
+ return sorts.flatMap((sort,i)=>[sort,{kind:"mcq",mcq:QUESTIONS[i]}]);
+}
+function card(v,i,cls="",tag=""){return `<div class="card ${cls}" draggable="true" data-i="${i}">${v}${tag?`<span class="tag">${tag}</span>`:""}</div>`}
+function placedCard(v,cls=""){return `<div class="card ${cls}" draggable="false">${v}</div>`}
+function setMsg(t,type=""){$("msg").className="msg"+(type?" "+type:"");$("msg").textContent=t}
+function bad(el,t){E++;currentSortHadError=true;$("err").textContent=E;setMsg("Mistake — "+t,"bad");if(el){el.classList.add("wrong");setTimeout(()=>el.classList.remove("wrong"),550)}}
+const t=()=>assessment[ai].test;
+function startChallenge(){
+ a=[...t().cards]; C=S=0; drag=null; currentSortHadError=false;
+ bPass=1;bI=0;bEnd=a.length-1;selPos=0;selJ=1;selMin=0;selPhase="start";qstate=null;
+ $("q").textContent=(ai+1)+"/"+TOTAL;
+ $("title").textContent="Question "+(ai+1)+" of "+TOTAL+(ALG==="quick"?" · "+t().pivot+" pivot":"");
+ render();
+}
+function bind(){
+ document.querySelectorAll(".card[draggable=true]").forEach(el=>{
+  el.ondragstart=e=>{
+    drag=Number(el.dataset.i);
+    e.dataTransfer.effectAllowed="move";
+    e.dataTransfer.setData("text/plain",String(drag));
+  };
+  el.ondragend=()=>{setTimeout(()=>drag=null,0)};
+  el.ondragover=e=>e.preventDefault();
+  el.ondrop=e=>{
+    e.preventDefault();e.stopPropagation();
+    const src=e.dataTransfer.getData("text/plain");
+    if(!/^\d+$/.test(src) || Number(src)>=a.length) return;
+    if(src!=="")drag=Number(src);
+    if(drag!==null&&+el.dataset.i!==drag)dropCard(+el.dataset.i,el);
+    drag=null;
+  };
+ });
+ document.querySelectorAll(".dropzone").forEach(z=>{
+  z.ondragover=e=>{e.preventDefault();e.dataTransfer.dropEffect="move";z.classList.add("over")};
+  z.ondragleave=()=>z.classList.remove("over");
+  z.ondrop=e=>{
+    e.preventDefault();e.stopPropagation();z.classList.remove("over");
+    const src=e.dataTransfer.getData("text/plain");
+    if(!/^\d+$/.test(src) || Number(src)>=a.length) return;
+    if(src!=="")drag=Number(src);
+    dropZone(z.dataset.zone,z);
+    drag=null;
+  };
+ });
+}
+function render(){$("c").textContent=C;$("s").textContent=S;$("err").textContent=E;if(ALG==="bubble")renderBubble();else if(ALG==="selection")renderSelection();else renderQuick();bind()}
+function challengeDone(){
+ const sorted=[...a].sort((x,y)=>x-y);
+ $("stage").innerHTML=`<div class="cards">${sorted.map(v=>placedCard(v,"finished")).join("")}</div>`;
+ if(!currentSortHadError)sortCorrect++;
+ setMsg(currentSortHadError?"Sorting challenge complete.":"Sorting challenge correct.","good");
+ allowNext();
+}
+// Bubble
+function renderBubble(){
+ $("rule").textContent="COMPARE NEIGHBOURS → SWAP IF NEEDED → MOVE RIGHT";
+ if(bEnd===0)return challengeDone();
+ let i=bI,j=i+1,need=a[i]>a[j];
+ $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===i||k===j?"active":k>bEnd?"finished":"",k===i?"LEFT":k===j?"RIGHT":"")).join("")}</div><div class="dropzone" data-zone="keep">DROP A HIGHLIGHTED CARD HERE TO KEEP / NO SWAP</div>`;
+ setMsg(`Pass ${bPass}: compare ${a[i]} and ${a[j]}. Work left to right.`);
+}
+function advanceBubble(){C++;bI++;if(bI>=bEnd){bEnd--;bPass++;bI=0}render()}
+function bubbleSwap(i,j,el){if(!((i===bI&&j===bI+1)||(j===bI&&i===bI+1)))return bad(el,"swap only the highlighted neighbours.");if(a[bI]<=a[bI+1])return bad(el,"these cards are already in order; use KEEP / NO SWAP.");[a[bI],a[bI+1]]=[a[bI+1],a[bI]];S++;advanceBubble()}
+// Selection
+function renderSelection(){
+ $("rule").textContent="MARK MINIMUM → SCAN REMAINING VALUES → SWAP ONCE";
+ if(selPos>=a.length-1)return challengeDone();
+ if(selPhase==="start"){
+  $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===selPos?"active":k<selPos?"finished":"",k===selPos?"STARTING MINIMUM":"")).join("")}</div><div class="dropzone" data-zone="markmin">DRAG THE FIRST UNSORTED CARD HERE TO MARK IT AS THE STARTING MINIMUM</div>`;
+  setMsg(`Round ${selPos+1}: mark ${a[selPos]} as the starting minimum. This is not a scan.`);return;
+ }
+ if(selPhase==="scan"){
+  if(selJ>=a.length){selPhase="swap";return renderSelection()}
+  $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===selMin||k===selJ?"active":k<selPos?"finished":"",k===selMin?"MINIMUM":k===selJ?"CANDIDATE":"")).join("")}</div><div class="actionrow"><div class="dropzone" data-zone="keepmin">KEEP CURRENT MINIMUM</div><div class="dropzone" data-zone="newmin">MAKE CANDIDATE THE NEW MINIMUM</div></div>`;
+  setMsg(`Scan ${a[selJ]} against current minimum ${a[selMin]}. Drag the CANDIDATE to the correct decision box.`);return;
+ }
+ $("stage").innerHTML=`<div class="cards">${a.map((v,k)=>card(v,k,k===selPos||k===selMin?"active":k<selPos?"finished":"",k===selPos?"FIRST UNSORTED":k===selMin?"MINIMUM":"")).join("")}</div>`;
+ if(selMin===selPos){$("stage").innerHTML+=`<div class="dropzone" data-zone="noselswap">DROP THE MINIMUM HERE — NO SWAP NEEDED</div>`;setMsg("Scan complete. The minimum is already first; no swap is needed.")}
+ else setMsg("Scan complete. Drag the MINIMUM onto the FIRST UNSORTED card.");
+}
+function nextSel(){selPos++;selMin=selPos;selJ=selPos+1;selPhase="start";render()}
+function selZone(zone,el){
+ if(selPhase==="start"){if(zone!=="markmin"||drag!==selPos)return bad(el,"mark the first unsorted card.");selPhase="scan";selJ=selPos+1;return render()}
+ if(selPhase==="scan"){if(drag!==selJ)return bad(el,"move the CANDIDATE card.");let smaller=a[selJ]<a[selMin];if(smaller&&zone!=="newmin")return bad(el,`${a[selJ]} is smaller and must become the minimum.`);if(!smaller&&zone!=="keepmin")return bad(el,"keep the current minimum.");C++;if(smaller)selMin=selJ;selJ++;return render()}
+ if(selPhase==="swap"&&zone==="noselswap"){if(drag!==selMin||selMin!==selPos)return bad(el,"no-swap is not correct here.");return nextSel()}
+ return bad(el,"that move is not valid now.");
+}
+function selSwap(i,j,el){if(selPhase!=="swap")return bad(el,"finish the scan first.");if(selMin===selPos)return bad(el,"no swap is needed.");if(!((i===selMin&&j===selPos)||(j===selMin&&i===selPos)))return bad(el,"swap only MINIMUM with FIRST UNSORTED.");[a[selPos],a[selMin]]=[a[selMin],a[selPos]];S++;nextSel()}
+// Quick
+function newQGroup(arr){if(arr.length<=1)return null;let pi=pivotIndexFor(arr,t().pivot);return {arr:[...arr],pivotIndex:pi,pivot:arr[pi],at:pi,phase:"placePivot",less:[],equal:[],greater:[]}}
+function initQ(){if(!qstate)qstate={stack:[[...a]],current:null,scans:0}}
+function nextQ(){while(!qstate.current&&qstate.stack.length){let arr=qstate.stack.shift();if(arr.length<=1)continue;qstate.current=newQGroup(arr)}}
+function nextNonPivot(g,start=0){for(let i=start;i<g.arr.length;i++)if(i!==g.pivotIndex)return i;return g.arr.length}
+function renderQuick(){
+ $("rule").textContent="CHOOSE PIVOT → PLACE PIVOT IN EQUAL → PARTITION LEFT TO RIGHT → SORT OUTER GROUPS → JOIN";
+ initQ();nextQ();if(!qstate.current){C=qstate.scans;return challengeDone()}
+ let g=qstate.current,pv=g.pivot;
+ $("stage").innerHTML=`<div class="cards">${g.arr.map((v,i)=>{let cls=i===g.pivotIndex?"pivot":"";if(i===g.at)cls+=(cls?" ":"")+"active";if(g.phase==="classify"&&(i<g.at||i===g.pivotIndex))cls+=(cls?" ":"")+"dim";return card(v,i,cls,i===g.pivotIndex?"PIVOT":i===g.at?"NEXT":"")}).join("")}</div>
+ <div class="bins"><div class="bin dropzone" data-zone="less"><h3>LESS than ${pv}</h3><div class="cards">${g.less.map(v=>placedCard(v)).join("")}</div></div><div class="bin dropzone" data-zone="equal"><h3>DROP PIVOT HERE — EQUAL to ${pv}</h3><div class="cards">${g.equal.map(v=>placedCard(v,"pivot")).join("")}</div></div><div class="bin dropzone" data-zone="greater"><h3>GREATER than ${pv}</h3><div class="cards">${g.greater.map(v=>placedCard(v)).join("")}</div></div></div>`;
+ setMsg(g.phase==="placePivot"?`First drag the pink pivot ${pv} into EQUAL / PIVOT GROUP.`:`Pivot ${pv} is set. Work left to right: drag NEXT (${g.arr[g.at]}) into the correct group.`);
+ C=qstate.scans;$("c").textContent=C;
+}
+function finishQGroup(g){let kids=[];if(g.less.length>1)kids.push([...g.less]);if(g.greater.length>1)kids.push([...g.greater]);qstate.stack=kids.concat(qstate.stack);qstate.current=null;render()}
+function qZone(zone,el){
+ let g=qstate.current;if(!g)return;
+ if(g.phase==="placePivot"){if(drag!==g.pivotIndex)return bad(el,"place the pink PIVOT first.");if(zone!=="equal")return bad(el,"the pivot belongs in EQUAL / PIVOT GROUP.");g.equal.push(g.pivot);qstate.scans++;C=qstate.scans;g.phase="classify";g.at=nextNonPivot(g,0);if(g.at>=g.arr.length)return finishQGroup(g);return render()}
+ if(drag!==g.at)return bad(el,"classify the NEXT card from left to right.");
+ let v=g.arr[g.at],correct=v<g.pivot?"less":v>g.pivot?"greater":"equal";if(zone!==correct)return bad(el,`${v} belongs in ${correct.toUpperCase()}.`);g[correct].push(v);qstate.scans++;C=qstate.scans;g.at=nextNonPivot(g,g.at+1);if(g.at>=g.arr.length)return finishQGroup(g);render()
+}
+function dropCard(j,el){if(drag===null)return;if(ALG==="bubble")bubbleSwap(drag,j,el);else if(ALG==="selection")selSwap(drag,j,el);else bad(el,"Quick Sort cards go into LESS / EQUAL / GREATER.");drag=null}
+function dropZone(zone,el){
+ if(drag===null)return;
+ if(ALG==="bubble"){if(zone!=="keep")bad(el,"use KEEP / NO SWAP.");else if(!(drag===bI||drag===bI+1))bad(el,"move a highlighted card.");else if(a[bI]>a[bI+1])bad(el,"these neighbours must be swapped.");else advanceBubble()}
+ else if(ALG==="selection")selZone(zone,el);else qZone(zone,el);drag=null
+}
+
+function allowNext(){
+ answered=true;
+ $("progress").value=ai+1;
+ $("next").hidden=false;
+ $("next").textContent=ai+1===TOTAL?"See result":"Next question";
+ $("next").focus();
+}
+function finish(){
+ $("test").hidden=true;$("mcq").hidden=true;$("next").hidden=true;
+ $("resultPanel").hidden=false;
+ $("result").textContent=(sortCorrect+mcqCorrect)+" / "+TOTAL;
+ $("breakdown").textContent=sortCorrect+" / 5 sorting challenges without a mistake · "+mcqCorrect+" / 5 knowledge questions correct";
+ $("resultTitle").focus();
+}
+function show(){
+ if(ai===TOTAL)return finish();
+ const item=assessment[ai];
+ answered=false;
+ $("next").hidden=true;
+ $("progress").value=ai;
+ $("test").hidden=item.kind!=="sort";
+ $("mcq").hidden=item.kind!=="mcq";
+ if(item.kind==="sort"){startChallenge();$("title").focus();return;}
+ $("mctitle").textContent="Question "+(ai+1)+" of "+TOTAL;
+ const [prompt,options,correct]=item.mcq;
+ $("mcqtext").textContent=prompt;
+ $("mcqanswers").replaceChildren();
+ $("mcqmsg").textContent="";
+ options.forEach((option,i)=>{
+  const b=document.createElement("button");
+  b.type="button";b.className="answer";b.textContent=option;
+  b.onclick=()=>{
+   if(answered)return;
+   const buttons=[...$("mcqanswers").children];
+   buttons.forEach(x=>x.disabled=true);
+   buttons[correct].classList.add("correct");
+   if(i===correct)mcqCorrect++;
+   else b.classList.add("wronganswer");
+   $("mcqmsg").textContent=i===correct?"Correct.":"Correct answer: "+options[correct];
+   allowNext();
+  };
+  $("mcqanswers").appendChild(b);
+ });
+ $("mctitle").focus();
+}
+function begin(){
+ assessment=build();
+ ai=E=mcqCorrect=sortCorrect=0;
+ $("resultPanel").hidden=true;
+ show();
+}
+$("next").onclick=()=>{if(answered){ai++;show();}};
+$("retake").onclick=begin;
+begin();
+</script></body></html>
