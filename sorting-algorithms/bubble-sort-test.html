@@ -209,7 +209,7 @@ function finish(){
  $("breakdown").textContent=sortCorrect+" / 5 sorting challenges without a mistake · "+mcqCorrect+" / 5 knowledge questions correct";
  $("resultTitle").focus();
 }
-function show(){
+function show(focusQuestion = true){
  if(ai===TOTAL)return finish();
  const item=assessment[ai];
  answered=false;
@@ -217,7 +217,7 @@ function show(){
  $("progress").value=ai;
  $("test").hidden=item.kind!=="sort";
  $("mcq").hidden=item.kind!=="mcq";
- if(item.kind==="sort"){startChallenge();$("title").focus();return;}
+ if(item.kind==="sort"){startChallenge();if(focusQuestion)$("title").focus();return;}
  $("mctitle").textContent="Question "+(ai+1)+" of "+TOTAL;
  const [prompt,options,correct]=item.mcq;
  $("mcqtext").textContent=prompt;
@@ -238,15 +238,15 @@ function show(){
   };
   $("mcqanswers").appendChild(b);
  });
- $("mctitle").focus();
+ if(focusQuestion)$("mctitle").focus();
 }
-function begin(){
+function begin(focusQuestion = true){
  assessment=build();
  ai=E=mcqCorrect=sortCorrect=0;
  $("resultPanel").hidden=true;
- show();
+ show(focusQuestion);
 }
 $("next").onclick=()=>{if(answered){ai++;show();}};
-$("retake").onclick=begin;
-begin();
+$("retake").onclick=()=>begin();
+begin(false);
 </script></body></html>
