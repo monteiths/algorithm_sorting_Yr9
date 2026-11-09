@@ -2,7 +2,7 @@
 <html lang="en-NZ">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Toast in four stages | Techquity</title>
+<title>Toast in seven stages | Techquity</title>
 <meta name="description" content="Put the toast-making instructions in order. A simple Year 9 sequencing activity.">
 <style>
 :root{color-scheme:light;--purple:#60328a;--ink:#252036;--muted:#6f687d;--line:#dfd8e9;--paper:#fff;--bg:#f6f3f9}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}header{border-bottom:1px solid var(--line);background:white}header div{max-width:1140px;margin:auto;padding:18px 28px;display:flex;justify-content:space-between;gap:16px;align-items:center}.brand{font-weight:850;letter-spacing:.11em;color:var(--purple);font-size:14px}.tag{font-size:12px;color:var(--muted)}main{max-width:1140px;margin:auto;padding:30px 28px 32px}.eyebrow{font-size:12px;font-weight:750;letter-spacing:.12em;color:var(--purple);margin:0 0 5px}h1{font-size:clamp(28px,4vw,40px);line-height:1.15;letter-spacing:-.035em;margin:0 0 12px}h1 span{display:inline-block;vertical-align:middle;margin-right:10px}p{margin:0}.intro{max-width:780px;color:var(--muted)}.layout{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:26px}.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:20px}.heading{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:4px}h2{font-size:18px;margin:0}.count{font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}.hint{font-size:13px;color:var(--muted);margin-bottom:16px}.bank{min-height:500px;display:flex;flex-direction:column;gap:9px}.card{appearance:none;display:flex;align-items:center;text-align:left;gap:10px;width:100%;border:1px solid #d8cee5;background:#faf8fd;border-radius:9px;padding:11px 13px;min-height:53px;font:inherit;font-size:14px;line-height:1.35;color:var(--ink);cursor:grab;user-select:none;touch-action:none;transition:border-color .12s,box-shadow .12s}.grip{font-size:19px;color:#9481ab;flex:none;line-height:1}.card:hover{border-color:var(--purple)}.card[aria-pressed=true]{outline:3px solid #ad8bd0;outline-offset:1px;background:#f0e7f9}.card:focus-visible,button:focus-visible,.slot:focus-visible{outline:3px solid #8a59b6;outline-offset:3px}.card.dragging{opacity:.35}.sequence{display:flex;flex-direction:column;gap:9px}.row{display:grid;grid-template-columns:25px 1fr;gap:8px;align-items:center}.number{font-size:13px;font-weight:750;color:var(--purple);text-align:center}.slot{min-height:53px;border:1.5px dashed #d3c8df;border-radius:9px;display:flex;align-items:center;position:relative;cursor:pointer}.slot.empty:after{content:'Drop a step here';font-size:13px;color:#93899e;padding:12px}.slot.over,.bank.over{background:#eee4f7;border-color:var(--purple)}.slot .card{border:0;min-height:50px;border-radius:8px}.bank.empty:after{content:'All steps placed. Check your order when you are ready.';padding:20px;font-size:14px;color:var(--muted);text-align:center}.controls{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:20px}.buttons{display:flex;gap:10px;flex-wrap:wrap}button.action{border:1px solid var(--purple);background:var(--purple);color:white;border-radius:9px;padding:11px 21px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}button.secondary{background:white;color:var(--purple);border-color:var(--line)}button:disabled{opacity:.45;cursor:not-allowed}.feedback{font-size:18px;font-weight:750;min-height:29px}.feedback.error{color:#b12d42}.feedback.success{color:#247047}.explanation{margin-top:24px;padding-top:20px;border-top:1px solid var(--line);max-width:850px}.explanation h2{margin-bottom:8px}.explanation p{font-size:14px;color:var(--muted);margin:7px 0}.note{font-size:12px;color:var(--muted);margin-top:15px}.touch-ghost{position:fixed;pointer-events:none;z-index:10;width:300px;opacity:.9;box-shadow:0 8px 35px #25203644}.completed .slot{border-style:solid;border-color:#9ac8ac}.completed .card{cursor:default;background:#f3faf5}@media(max-width:700px){header div{padding:14px 18px}.tag{display:none}main{padding:24px 16px}.layout{gap:15px;grid-template-columns:1fr 1fr;margin-top:20px}.panel{padding:12px 9px;border-radius:12px}h2{font-size:15px}.heading{display:block}.hint{font-size:12px;min-height:36px}.card{font-size:12px;padding:9px 7px;min-height:70px;gap:5px}.slot{min-height:70px}.slot .card{min-height:67px}.slot.empty:after{font-size:11px;padding:8px}.row{grid-template-columns:16px 1fr;gap:2px}.bank{min-height:623px}.grip{font-size:15px}.controls{align-items:flex-start;flex-direction:column}.intro{font-size:14px}.count{font-size:11px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -11,6 +11,10 @@
 
 html.embedded header{display:none}html.embedded main{padding:20px 16px;max-width:1100px}html.embedded h1{font-size:28px}html.embedded .layout{margin-top:18px;gap:16px}html.embedded .panel{padding:14px}html.embedded .bank,html.embedded .sequence{height:450px}html.embedded .explanation{margin-top:18px;padding-top:12px}html.embedded .controls{margin-top:14px}
 .stage-title{font-size:14px;color:white;background:var(--purple);padding:10px 12px;border-radius:7px;margin:10px 0 2px;flex-shrink:0}.stage-title:first-child{margin-top:0}.slot.verified{border:2px solid #34764f;background:#eef8f1}.slot.verified .card{opacity:1;color:#225738;background:#eef8f1;cursor:default}.slot.verified .grip{font-size:0}.slot.verified .grip:after{content:"✓";font-size:18px;color:#34764f}.feedback{font-size:15px;max-width:520px}.card{touch-action:pan-y}.card:disabled{opacity:1}.sequence .stage-title{position:relative}button.secondary{background:#fff}@media(max-width:700px){.stage-title{font-size:12px;padding:8px}.controls{gap:10px}}
+#stage{margin-top:20px}.layout{margin-top:12px}
+main:not(.completed) .bank,main:not(.completed) .sequence{height:auto;min-height:0;max-height:420px}
+main.completed .layout{grid-template-columns:1fr}
+main.completed .layout>section:first-child{display:none}
 </style>
 </head>
 <body>
@@ -18,13 +22,14 @@ html.embedded header{display:none}html.embedded main{padding:20px 16px;max-width
 <main>
 <p class="eyebrow">SEQUENCING CHALLENGE</p>
 <h1><span aria-hidden="true">🍞</span>Make toast, one stage at a time.</h1>
-<p class="intro">Rebuild the same 21-step algorithm using four stages. Drag a card, or select a card and then a numbered space. Check your order: correct steps stay locked in place; only incorrect steps return to Instructions.</p>
+<p class="intro">Rebuild the 21-step algorithm in seven small stages. Each stage gives you just the cards for that part of the job. Drag a card, or select it and then select a numbered space. When you check your order, correct cards lock in place and misplaced cards return to Instructions.</p>
+<h2 class="stage-title" id="stage" tabindex="-1"></h2>
 <div class="layout">
-<section class="panel" aria-labelledby="bank-title"><div class="heading"><h2 id="bank-title">Instructions</h2><span class="count" id="remaining"></span></div><p class="hint">Drag a card, or select it and then select a space. Scroll to see all 21.</p><div class="bank" id="bank" aria-label="Unplaced instructions"></div></section>
-<section class="panel" aria-labelledby="order-title"><div class="heading"><h2 id="order-title">Your order</h2><span class="count" id="progress"></span></div><p class="hint">Use the stage headings. Put one instruction in each numbered space.</p><div class="sequence" id="sequence"></div></section>
+<section class="panel" aria-labelledby="bank-title"><div class="heading"><h2 id="bank-title">Instructions</h2><span class="count" id="remaining"></span></div><p class="hint">These are the instructions for the current stage.</p><div class="bank" id="bank" aria-label="Unplaced instructions"></div></section>
+<section class="panel" aria-labelledby="order-title"><div class="heading"><h2 id="order-title">Your order</h2><span class="count" id="progress"></span></div><p class="hint">Put one instruction in each numbered space.</p><div class="sequence" id="sequence"></div></section>
 </div>
-<div class="controls"><div class="buttons"><button class="action" id="check" disabled>Check order</button><button class="action secondary" id="reset">Start again</button></div><p id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></p></div>
-<section class="explanation" aria-labelledby="why-title"><h2 id="why-title">Why one exact sequence?</h2><p>A completed algorithm can look obvious. Creating its precise steps from scratch is harder.</p><p>Another algorithm might also make toast. Here, your challenge is to reconstruct this particular algorithm exactly. A deterministic algorithm follows the same steps and gives the same result each time when its inputs and conditions are the same.</p></section>
+<div class="controls"><div class="buttons"><button class="action" id="check" disabled>Check stage</button><button class="action" id="next" hidden>Next stage</button><button class="action secondary" id="reset">Start again</button></div><p id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></p></div>
+<section class="explanation" aria-labelledby="why-title"><h2 id="why-title">How did decomposition help?</h2><p>Decomposition means breaking a problem into smaller parts. Here, you can solve one small job at a time and join the stages to rebuild the full algorithm.</p><p><strong>Think about it.</strong> How many cards did you have to consider at once? Why does starting the toaster come before waiting for the toast?</p><p>Your challenge is to reconstruct this particular sequence. Other sensible orders may also make toast.</p></section>
 <p class="note">To move an unchecked card, drag it to another space or back to Instructions. Correct steps lock after checking. Start again clears all progress. Keyboard: select a card with Enter or Space, then select a numbered space.</p>
 </main>
 <script>
@@ -33,18 +38,55 @@ if(new URLSearchParams(location.search).get('embed')==='1')document.documentElem
 const STEPS=[{"id": "1", "text": "Plug in the toaster and switch it on"}, {"id": "2", "text": "Remove any excess butter from the tip of the knife"}, {"id": "3", "text": "Place the toast on a plate"}, {"id": "4", "text": "Put lid on butter"}, {"id": "5", "text": "Find bag of bread"}, {"id": "6", "text": "Get butter or margarine"}, {"id": "7", "text": "Put buttered toast on plate"}, {"id": "8", "text": "Push the lever to lower the toast"}, {"id": "9", "text": "Get knife"}, {"id": "10", "text": "Take the plate and toast away and eat (the toast only!)"}, {"id": "11", "text": "Move the knife backwards and forwards in a sweeping motion across the bread to spread it at an even thickness"}, {"id": "12", "text": "Place 5 grams of butter on the tip of the knife"}, {"id": "13", "text": "Position the tip of the knife on the upwards side of the slice of bread with the butter between the knife and the bread"}, {"id": "14", "text": "Get a slice of bread"}, {"id": "15", "text": "Open bag"}, {"id": "16", "text": "Put butter and bread away"}, {"id": "17", "text": "Wait a few minutes for the toast to pop up out of the toaster"}, {"id": "18", "text": "Place bread in the toaster"}, {"id": "19", "text": "Put knife on bench"}, {"id": "20", "text": "Take the toast out of the machine being careful not to burn your hands"}, {"id": "21", "text": "Put clip back on bread bag"}];
 const EXPECTED_ORDER=["1", "5", "15", "14", "21", "18", "8", "6", "9", "17", "20", "3", "12", "13", "11", "2", "7", "19", "4", "16", "10"];
 
-function isCorrect(order){return order.length===EXPECTED_ORDER.length&&order.every((id,i)=>id===EXPECTED_ORDER[i]);}
 function shuffled(ids){const a=[...ids];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-const STAGES={0:'1. Set up the kitchen',5:'2. Make the Toast',17:'3. Clean up',20:'4. Leave and eat'};
+const STAGES = [
+  { start: 0, title: 'Set up the toaster and get the bread' },
+  { start: 5, title: 'Start toasting' },
+  { start: 7, title: 'Get the butter and knife ready' },
+  { start: 9, title: 'Wait for the toast and move it to the plate' },
+  { start: 12, title: 'Spread the butter' },
+  { start: 15, title: 'Finish plating and put down the knife' },
+  { start: 18, title: 'Tidy up and eat' },
+];
+let stageIndex = 0;
+const stageEnd = () => STAGES[stageIndex + 1]?.start ?? EXPECTED_ORDER.length;
+const stagePositions = () => slots.slice(STAGES[stageIndex].start, stageEnd());
+const stageIsLocked = () => stagePositions().every((_, offset) => locked.has(STAGES[stageIndex].start + offset));
 let locked=new Set();
 let slots=Array(STEPS.length).fill(null),bank=[],selected=null,dragged=null,complete=false;
 const bankEl=document.querySelector('#bank'),seq=document.querySelector('#sequence'),feedback=document.querySelector('#feedback'),check=document.querySelector('#check');
 function message(text,type=''){feedback.textContent=text;feedback.className='feedback '+type;}
-function reset(keepMessage=false){locked.clear();slots.fill(null);bank=shuffled(STEPS.map(s=>s.id));selected=null;dragged=null;complete=false;document.querySelector('main').classList.remove('completed');if(!keepMessage)message('');render();bankEl.scrollTop=0;seq.scrollTop=0;}
+const stageHeading = document.querySelector('#stage');
+const next = document.querySelector('#next');
+
+function openStage(index) {
+  stageIndex = index;
+  bank = shuffled(EXPECTED_ORDER.slice(STAGES[index].start, stageEnd()));
+  selected = null;
+  dragged = null;
+  message('');
+  render();
+  bankEl.scrollTop = 0;
+  seq.scrollTop = 0;
+}
+
+function reset() {
+  locked.clear();
+  slots.fill(null);
+  complete = false;
+  document.querySelector('main').classList.remove('completed');
+  openStage(0);
+}
+
+next.addEventListener('click', () => {
+  if (complete || !stageIsLocked() || stageIndex + 1 >= STAGES.length) return;
+  openStage(stageIndex + 1);
+  stageHeading.focus();
+});
 function selectCard(id){if(complete||locked.has(slots.indexOf(id)))return;selected=selected===id?null:id;document.querySelectorAll('.card').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.id===selected)));}
-function place(id,target){if(complete||!STEPS.some(s=>s.id===id))return;const source=slots.indexOf(id);const bankIndex=bank.indexOf(id);if(locked.has(source)||(target!=='bank'&&locked.has(target)))return;if(target==='bank'){if(source<0)return;slots[source]=null;bank.push(id);}else{if(!Number.isInteger(target)||target<0||target>=slots.length)return;const displaced=slots[target];if(source===target)return;if(source>=0)slots[source]=displaced;else{bank.splice(bankIndex,1);if(displaced)bank.push(displaced);}slots[target]=id;}selected=null;message('');render();}
+function place(id,target){if(complete||!STEPS.some(s=>s.id===id))return;const source=slots.indexOf(id);const bankIndex=bank.indexOf(id);if((source<0&&bankIndex<0)||locked.has(source)||(target!=='bank'&&(locked.has(target)||target<STAGES[stageIndex].start||target>=stageEnd())))return;if(target==='bank'){if(source<0)return;slots[source]=null;bank.push(id);}else{if(!Number.isInteger(target)||target<0||target>=slots.length)return;const displaced=slots[target];if(source===target)return;if(source>=0)slots[source]=displaced;else{bank.splice(bankIndex,1);if(displaced)bank.push(displaced);}slots[target]=id;}selected=null;message('');render();}
 function card(id){const step=STEPS.find(s=>s.id===id),el=document.createElement('button');el.type='button';el.className='card';el.draggable=false;el.dataset.id=id;el.setAttribute('aria-pressed',String(selected===id));el.disabled=complete||locked.has(slots.indexOf(id));const grip=document.createElement('span');grip.className='grip';grip.textContent='⠿';grip.setAttribute('aria-hidden','true');const text=document.createElement('span');text.textContent=step.text;el.append(grip,text);el.addEventListener('click',e=>{e.stopPropagation();if(suppressClick){suppressClick=false;return;}selectCard(id);});el.addEventListener('dragstart',e=>{dragged=id;e.dataTransfer.setData('text/plain',id);e.dataTransfer.effectAllowed='move';el.classList.add('dragging');});el.addEventListener('dragend',()=>{dragged=null;document.querySelectorAll('.over,.dragging').forEach(e=>e.classList.remove('over','dragging'));});el.addEventListener('pointerdown',e=>startTouch(e,id,el));return el;}
-function render(){const bankScroll=bankEl.scrollTop,sequenceScroll=seq.scrollTop;bankEl.replaceChildren(...bank.map(card));bankEl.classList.toggle('empty',bank.length===0);seq.replaceChildren();slots.forEach((id,i)=>{if(STAGES[i]){const heading=document.createElement('h3');heading.className='stage-title';heading.textContent=STAGES[i];seq.append(heading);}const row=document.createElement('div');row.className='row';const n=document.createElement('span');n.className='number';n.textContent=i+1;const slot=document.createElement('div');slot.className='slot'+(id?'':' empty')+(locked.has(i)?' verified':'');slot.dataset.slot=i;slot.tabIndex=complete?-1:0;slot.setAttribute('role','button');slot.setAttribute('aria-label',`Step ${i+1}: ${id?STEPS.find(s=>s.id===id).text:'empty'}`);if(id)slot.append(card(id));slot.addEventListener('click',()=>{if(selected)place(selected,i);});slot.addEventListener('keydown',e=>{if(e.target===slot&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(selected){place(selected,i);seq.querySelector('[data-slot="'+i+'"]').focus();}}});dropTarget(slot,i);row.append(n,slot);seq.append(row);});document.querySelector('#remaining').textContent=`${bank.length} remaining`;document.querySelector('#progress').textContent=`${slots.filter(Boolean).length} / ${STEPS.length}`;check.disabled=complete||!slots.some((s,i)=>s&&!locked.has(i));bankEl.scrollTop=bankScroll;seq.scrollTop=sequenceScroll;}
+function render(){const bankScroll=bankEl.scrollTop,sequenceScroll=seq.scrollTop;bankEl.replaceChildren(...bank.map(card));bankEl.classList.toggle('empty',bank.length===0);seq.replaceChildren();slots.forEach((id,i)=>{if(!complete&&(i<STAGES[stageIndex].start||i>=stageEnd()))return;const section=complete&&STAGES.find(stage=>stage.start===i);if(section){const heading=document.createElement('h3');heading.className='stage-title';heading.textContent=section.title;seq.append(heading);}const row=document.createElement('div');row.className='row';const n=document.createElement('span');n.className='number';n.textContent=i+1;const slot=document.createElement('div');slot.className='slot'+(id?'':' empty')+(locked.has(i)?' verified':'');slot.dataset.slot=i;slot.tabIndex=locked.has(i)?-1:0;slot.setAttribute('role','button');slot.setAttribute('aria-label',`Step ${i+1}: ${id?STEPS.find(s=>s.id===id).text:'empty'}`);if(id)slot.append(card(id));slot.addEventListener('click',()=>{if(selected)place(selected,i);});slot.addEventListener('keydown',e=>{if(e.target===slot&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(selected){place(selected,i);seq.querySelector('[data-slot="'+i+'"]').focus();}}});dropTarget(slot,i);row.append(n,slot);seq.append(row);});document.querySelector('#remaining').textContent=`${bank.length} remaining`;stageHeading.textContent=complete?'All seven stages complete':`Stage ${stageIndex+1} of ${STAGES.length} · ${STAGES[stageIndex].title}`;document.querySelector('#progress').textContent=`${locked.size} of ${STEPS.length} steps correct`;check.disabled=complete||!stagePositions().some((id,offset)=>id&&!locked.has(STAGES[stageIndex].start+offset));next.hidden=complete||!stageIsLocked();bankEl.scrollTop=bankScroll;seq.scrollTop=sequenceScroll;}
 function dropTarget(el,target){el.addEventListener('dragover',e=>{if(complete)return;e.preventDefault();e.dataTransfer.dropEffect='move';el.classList.add('over');});el.addEventListener('dragleave',e=>{if(!el.contains(e.relatedTarget))el.classList.remove('over');});el.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();el.classList.remove('over');place(dragged||e.dataTransfer.getData('text/plain'),target);});}
 let touch=null,suppressClick=false;
 let autoScrollTimer=null,dragPoint=null;
@@ -55,13 +97,39 @@ document.addEventListener('pointermove',e=>{if(!touch||e.pointerId!==touch.point
 function endTouch(e){if(!touch||e.pointerId!==touch.pointer)return;stopAutoScroll();const moved=!!touch.ghost,id=touch.id;touch.ghost?.remove();touch.el.classList.remove('dragging');touch=null;document.querySelectorAll('.over').forEach(el=>el.classList.remove('over'));if(moved){suppressClick=true;setTimeout(()=>suppressClick=false,350);const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('.slot,#bank');if(target)place(id,target===bankEl?'bank':Number(target.dataset.slot));}}
 document.addEventListener('pointerup',endTouch);document.addEventListener('pointercancel',e=>{if(touch&&e.pointerId===touch.pointer){stopAutoScroll();touch.ghost?.remove();touch.el.classList.remove('dragging');touch=null;document.querySelectorAll('.over').forEach(el=>el.classList.remove('over'));}});
 dropTarget(bankEl,'bank');bankEl.tabIndex=0;bankEl.addEventListener('click',e=>{if(e.target===bankEl&&selected)place(selected,'bank');});bankEl.addEventListener('keydown',e=>{if(e.target===bankEl&&(e.key==='Enter'||e.key===' ')){e.preventDefault();if(selected)place(selected,'bank');}});
-function checkOrder(){
-if(complete)return;
-let returned=[];
-slots.forEach((id,i)=>{if(!id)return;if(id===EXPECTED_ORDER[i])locked.add(i);else{returned.push(id);slots[i]=null;}});
-bank=shuffled([...bank,...returned]);selected=null;
-complete=isCorrect(slots);document.querySelector('main').classList.toggle('completed',complete);render();
-message(complete?'Correct! All 21 steps are in order.':`${locked.size} of 21 correct and kept. ${returned.length} incorrect ${returned.length===1?'step returned':'steps returned'} — fill the remaining spaces and try again.`,complete?'success':'');
+function checkOrder() {
+  if (complete) return;
+  const start = STAGES[stageIndex].start;
+  const end = stageEnd();
+  const returned = [];
+  for (let i = start; i < end; i++) {
+    const id = slots[i];
+    if (!id) continue;
+    if (id === EXPECTED_ORDER[i]) {
+      locked.add(i);
+    } else {
+      returned.push(id);
+      slots[i] = null;
+    }
+  }
+  bank = shuffled([...bank, ...returned]);
+  selected = null;
+  complete = locked.size === EXPECTED_ORDER.length;
+  document.querySelector('main').classList.toggle('completed', complete);
+  render();
+  if (complete) {
+    message('Correct! You joined seven small stages into one 21-step algorithm.', 'success');
+    seq.scrollTop = 0;
+    stageHeading.focus();
+  } else if (stageIsLocked()) {
+    message('Stage complete. Select Next stage when you are ready.', 'success');
+    next.focus();
+  } else {
+    const correct = end - start - bank.length;
+    const retry = returned.length ? ` ${returned.length} misplaced ${returned.length === 1 ? 'card returned' : 'cards returned'} to Instructions.` : '';
+    message(`${correct} of ${end - start} steps locked in this stage.${retry} Fill the remaining spaces and check again.`);
+    bankEl.querySelector('.card')?.focus();
+  }
 }
 check.addEventListener('click',checkOrder);
 document.querySelector('#reset').addEventListener('click',()=>reset());document.addEventListener('keydown',e=>{if(e.key==='Escape'){selected=null;document.querySelectorAll('.card').forEach(el=>el.setAttribute('aria-pressed','false'));}});reset();
